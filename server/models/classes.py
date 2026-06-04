@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from server.models.base import Base
 from sqlalchemy.orm import relationship
 
-#Base = declarative_base()
-from server.db.base import Base
 
 class Class(Base):
     """כיתה במערכת."""
@@ -27,9 +25,18 @@ class Class(Base):
         "Student",
         back_populates="class_"
     )
-    exam_classes = relationship("ExamClass", back_populates="class_")
-    teacher_classes = relationship("TeacherClass", back_populates="class_")
 
+    exam_classes = relationship(
+        "ExamClass",
+        back_populates="class_",
+        cascade="all, delete-orphan"
+    )
+
+    teacher_classes = relationship(
+        "TeacherClass",
+        back_populates="class_",
+        cascade="all, delete-orphan"
+    )
 
     # =========================
     # DEBUG

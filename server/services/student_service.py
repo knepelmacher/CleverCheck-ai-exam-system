@@ -7,6 +7,7 @@ class StudentService:
 
     def add_student(self, dto):
         self.repo.add(Student(
+            id=dto.student_id,
             first_name=dto.first_name,
             last_name = dto.last_name,
             class_id = dto.class_id,

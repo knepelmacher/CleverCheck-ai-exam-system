@@ -35,7 +35,7 @@ def get_subjects():
     subjects = service.get_all_subjects()
     return jsonify([
         {
-            'id': s.id,
+            'subject_id': s.subject_id,
             'subject_name': s.subject_name
         } for s in subjects
     ])
@@ -45,7 +45,7 @@ def get_subjects():
 def get_subject(subject_id):
     subject = service.get_subject_by_id(subject_id)
     return jsonify({
-        'id': subject.id,
+        'subject_id': subject.subject_id,
         'subject_name': subject.subject_name
     })
 

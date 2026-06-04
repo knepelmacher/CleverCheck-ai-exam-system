@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from server.models.base import Base
 from sqlalchemy.orm import relationship
-from server.db.base import Base
 
-#Base = declarative_base()
+
 
 
 

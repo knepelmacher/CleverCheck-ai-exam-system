@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from server.models.base import Base
 from sqlalchemy.orm import relationship
 
-Base = declarative_base()
 
 
 class TeacherAnswer(Base):

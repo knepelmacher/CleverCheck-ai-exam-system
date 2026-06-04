@@ -7,6 +7,7 @@ class TeacherService:
 
     def add_teacher(self, dto):
         self.repo.add(Teacher(
+            id=dto.teacher_id,
             first_name=dto.first_name,
             last_name=dto.last_name,
             email=dto.email,
@@ -14,6 +15,8 @@ class TeacherService:
             is_active=dto.is_active,
             role=dto.role,
         ))
+
+
 
     def get_all_teachers(self):
         return self.repo.get_all()

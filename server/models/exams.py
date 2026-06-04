@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from server.models.base import Base
 from sqlalchemy.orm import relationship
-from server.db.base import Base
 
-#Base = declarative_base()
+
 
 class Exam(Base):
     """מבחן שנוצר על ידי מורה."""
@@ -55,8 +54,8 @@ class Exam(Base):
     # =========================
     # RELATIONSHIPS
     # =========================
-    teacher = relationship("Teacher")
-    subject = relationship("Subject")
+    teacher = relationship("Teacher", back_populates="exams")
+    subject = relationship("Subject", back_populates="exams")
 
     questions = relationship(
         "Question",

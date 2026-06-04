@@ -6,10 +6,10 @@ class SubjectService:
         self.repo = repo
 
     def add_subject(self, dto):
-        if not dto.SubjectName:
+        if not dto.subject_name:
             raise CleverCheckBaseError("SubjectName is required")
 
-        self.repo.add(Subject(SubjectName=dto.SubjectName))
+        self.repo.add(Subject(subject_name=dto.subject_name))
 
     def get_all_subjects(self):
         return self.repo.get_all()
@@ -25,7 +25,7 @@ class SubjectService:
         if not subject:
             raise CleverCheckBaseError(subject_id)
 
-        subject.SubjectName = dto.SubjectName
+        subject.subject_name = dto.subject_name
         return self.repo.update(subject_id, subject)
 
     def delete_subject(self, subject_id):

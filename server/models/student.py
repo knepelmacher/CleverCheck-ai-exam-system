@@ -2,8 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-#Base = declarative_base()
-from server.db.base import Base
+from server.models.base import Base
 
 class Student(Base):
     """סטודנט במערכת."""
@@ -13,7 +12,7 @@ class Student(Base):
     # =========================
     # PK
     # =========================
-    id = Column("StudentID", Integer, primary_key=True)
+    id = Column("StudentID", Integer, primary_key=True,autoincrement=False)
 
     # =========================
     # FIELDS
