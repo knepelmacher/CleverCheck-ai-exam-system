@@ -238,6 +238,8 @@ build/
 *.iml
 
 # מודלים כבדים
+
+
 my_model/*.h5
 my_model/*.bin
 my_model/*.safetensors
@@ -245,6 +247,7 @@ my_model/tokenizer.json
 my_model/tokenizer_config.json
 my_model/special_tokens_map.json
 my_model/sentencepiece.bpe.model
+server/my_model/
 
 # קבצי מערכת
 .DS_Store
