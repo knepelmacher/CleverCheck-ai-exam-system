@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 from urllib.parse import quote_plus
 
 _SERVER = os.getenv('DB_SERVER', r'localhost\SQLEXPRESS')
-_DATABASE = os.getenv('DB_NAME', 'CleverCheckDB')
+_DATABASE = os.getenv('DB_NAME', 'GradexDB')
 _DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
 
 params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};Trusted_Connection=yes")

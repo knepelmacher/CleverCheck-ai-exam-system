@@ -14,6 +14,7 @@ from controllers.student_client_controller import student_client_bp
 from flask_cors import CORS
 from config import Config
 from server.controllers.students_auth_controller import auth_bp
+from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from server.controllers.exam_classes_controller import exam_classes_blueprint
 #from server.controllers.teacher_classes_controller import teacher_classes_blueprint
 #from db_connection import init_db
@@ -36,12 +37,12 @@ app.config["SECRET_KEY"] = Config.SECRET_KEY
 #init_db(app)
 
 # 1. טוען מודל
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, 'my_model')
-model = SentenceTransformer(MODEL_PATH)
-
-# 2. יוצר service עם המודל
-grading_service = GradingService(model=model)
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# MODEL_PATH = os.path.join(BASE_DIR, 'my_model')
+# model = SentenceTransformer(MODEL_PATH)
+#
+# # 2. יוצר service עם המודל
+# grading_service = GradingService(model=model)
 
 # 3. רושם blueprint עם הזרקת service
 #app.register_blueprint(
@@ -60,6 +61,7 @@ app.register_blueprint(student_exams_blueprint, url_prefix='/api/student_exams')
 app.register_blueprint(teacher_answers_blueprint, url_prefix='/api/teacher_answers')
 app.register_blueprint(question_types_blueprint, url_prefix='/api/question_types')
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
+app.register_blueprint(auth_teacher_bp, url_prefix="/api/auth_teacher")
 
 
 
