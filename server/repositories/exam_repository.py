@@ -1,4 +1,7 @@
 from server.models.exams import Exam
+from server.models.student_exams import StudentExam
+from server.models.subject import Subject
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 
@@ -16,6 +19,21 @@ class ExamRepository:
 
     def get_by_id(self, id):
         return self.session.get(Exam, id)
+
+    def get_all_for_student(self, student_id: int):
+        """שליפת כל המבחנים עם outer join ל-StudentExam של הסטודנט הספציפי, ול-Subject לשם המקצוע."""
+        return (
+            self.session.query(Exam)
+            .outerjoin(
+                StudentExam,
+                and_(
+                    StudentExam.exam_id == Exam.id,
+                    StudentExam.student_id == student_id
+                )
+            )
+            .outerjoin(Subject, Exam.subject_id == Subject.subject_id)
+            .all()
+        )
 
     def update(self, id, new_data: Exam):
         obj = self.get_by_id(id)

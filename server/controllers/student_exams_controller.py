@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, request, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -56,9 +58,20 @@ def delete_student_exam(student_exam_id):
 
 
 @student_exams_blueprint.route('/<int:student_exam_id>/finish', methods=['POST'])
-def finish_exam(student_exam_id):
-    return service.update_exam_grades(student_exam_id)
+def finish(student_exam_id):
+    result = service.update_exam_grades(student_exam_id)
 
+    if not result:
+        return jsonify({
+            "success": False,
+            "message": "לא נמצא מבחן תלמיד"
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "message": "המבחן נשמר בהצלחה",
+        "data": result
+    }), 200
 
 @student_exams_blueprint.route('/exam/<int:exam_id>', methods=['GET'])
 def get_student_exam(exam_id):
@@ -73,10 +86,15 @@ def get_student_exam(exam_id):
     student_exam = service.get_full_exam(student_id, exam_id)
     exam = student_exam.exam
 
+    if student_exam.status == 'NotStarted':
+        student_exam.status = 'InProgress'
+        service.repo.session.commit()
+
     return jsonify({
         "exam": {
             "id": exam.id,
             "name": exam.exam_name,
+            "subject": exam.subject.subject_name if exam.subject else None,
             "status": exam.status,
             "durationMinutes": exam.duration_minutes,
             "startTime": exam.start_time,
@@ -85,7 +103,8 @@ def get_student_exam(exam_id):
 
         "studentExam": {
             "id": student_exam.id,
-            "score": student_exam.score
+            "score": student_exam.score,
+            "status": student_exam.status,
         },
 
         "questions": [
@@ -94,6 +113,7 @@ def get_student_exam(exam_id):
                 "text": q.question_text,
                 "typeId": q.question_type_id,
                 "maxScore": q.max_score,
+                "questionNumber": q.question_number,
 
                 "options": [
                     {
@@ -114,14 +134,58 @@ def get_student_exam(exam_id):
                 "score": a.score
             }
             for a in student_exam.answers
-        ]
+        ],
+        "serverTime": datetime.now()
     })
 
-@student_exams_blueprint.route('/<int:student_exam_id>/results', methods=['GET'])
-def get_results(student_exam_id):
+@student_exams_blueprint.route('/exam/<int:exam_id>/results', methods=['GET'])
+def get_results_by_exam(exam_id):
+    data = get_student_data()
+    if not data:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    student_id = data.get('student_id')
+    if not student_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    student_exam = service.get_full_exam(student_id, exam_id)
+    if not student_exam:
+        return jsonify({"error": "Student exam not found"}), 404
+
     try:
-        return service.get_results(student_exam_id)
+        return jsonify(service.get_results(student_exam.id))
     except CleverCheckBaseError:
         return jsonify({"error": "Student exam not found"}), 404
     except Exception as e:
         return jsonify({"error": "Internal server error"}), 500
+
+
+@student_exams_blueprint.route('/<int:student_exam_id>/results', methods=['GET'])
+def get_results(student_exam_id):
+    try:
+        return jsonify(service.get_results(student_exam_id))
+    except CleverCheckBaseError:
+        return jsonify({"error": "Student exam not found"}), 404
+    except Exception as e:
+        return jsonify({"error": "Internal server error"}), 500
+
+@student_exams_blueprint.route('/<int:student_exam_id>/answers', methods=['POST'])
+def save_answer(student_exam_id):
+    data = request.get_json()
+    print("DATA:", data)
+    print("STUDENT_EXAM_ID:", student_exam_id)
+    question_id = data.get("questionId")
+    answer_text = data.get("answerText")
+    selected_option_id = data.get("selectedOptionId")
+
+    if question_id is None:
+        return jsonify({"error": "questionId is required"}), 400
+
+    service.save_answer(
+        student_exam_id=student_exam_id,
+        question_id=question_id,
+        answer_text=answer_text,
+        selected_option_id=selected_option_id
+    )
+
+    return jsonify({"message": "Answer saved"}), 200

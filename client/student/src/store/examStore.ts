@@ -3,6 +3,8 @@ import type { AnswerValue, QuestionMarkStatus } from '../types';
 
 export type ExamPageStatus = 'idle' | 'active' | 'submitted';
 
+const getQuestionKey = (question: any, fallbackIndex: number) => Number(question?.questionId ?? question?.id ?? question?.questionNumber ?? fallbackIndex + 1);
+
 type ExamStore = {
   exam: any | null;
   studentExam: any | null;
@@ -53,12 +55,18 @@ export const useExamStore = create<ExamStore>((set: (partial: Partial<ExamStore>
     })),
   setAnswer: (questionId: number, value: AnswerValue) =>
     set((state: ExamStore) => ({
-      answers: { ...state.answers, [questionId]: value },
+      answers: {
+        ...state.answers,
+        [questionId]: {
+          ...(state.answers[questionId] ?? {}),
+          ...value,
+        },
+      },
       visitedQuestions: state.visitedQuestions.includes(questionId) ? state.visitedQuestions : [...state.visitedQuestions, questionId],
     })),
   setCurrentQuestion: (id: number) =>
     set((state: ExamStore) => {
-      const questionId = state.questions[id]?.questionId ?? id;
+      const questionId = getQuestionKey(state.questions[id], id);
       return {
         currentQuestion: id,
         visitedQuestions: state.visitedQuestions.includes(questionId) ? state.visitedQuestions : [...state.visitedQuestions, questionId],

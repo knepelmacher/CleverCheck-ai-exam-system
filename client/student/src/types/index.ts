@@ -1,6 +1,14 @@
-export type ExamStatus = 'Active' | 'InProgress' | 'Submitted' | 'Draft' | 'Closed';
+export type ExamStatus =
+  | 'Active'
+  | 'Draft'
+  | 'Closed';
 export type QuestionType = 'MCQ' | 'TEXT';
 export type QuestionMarkStatus = 'none' | 'in-progress' | 'review';
+export type StudentExamStatus =
+  'NotStarted' |
+  'InProgress' |
+  'Submitted' |
+  'Checked';
 
 export interface User {
   studentId: number;
@@ -14,10 +22,13 @@ export interface ExamCardModel {
   subject: string;
   status: ExamStatus;
   durationMinutes: number;
+  startTime: string;
+  endTime: string;
+  computedStatus: StudentExamStatus | null;
 }
 
 export interface QuestionOption {
-  optionId: number;
+  id: number;
   text: string;
 }
 
@@ -25,7 +36,7 @@ export interface QuestionModel {
   questionId: number;
   questionNumber: number;
   text: string;
-  type: QuestionType;
+  typeId: QuestionType;
   maxScore: number;
   options: QuestionOption[];
 }
@@ -41,12 +52,12 @@ export interface ExamInitialPayload {
     name: string;
     subject: string;
     durationMinutes: number;
+    startTime: string;
+    endTime: string;
   };
   studentExam: {
     studentExamId: number;
-    status: ExamStatus;
-    startTime: string;
-    endTime: string;
+    status: StudentExamStatus;
   };
   questions: QuestionModel[];
   answers: Array<{
