@@ -9,6 +9,7 @@ export interface StudentExam {
   start_time?: string | null
   end_time?: string | null
   score?: number | null
+  status?: string | null
   exam?: Exam
   student?: Student
   answers?: StudentAnswer[]

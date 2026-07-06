@@ -6,8 +6,12 @@ class TeacherRepository:
         self.session = session
 
     def add(self, obj: Teacher):
-        self.session.add(obj)
-        self.session.commit()
+        try:
+            self.session.add(obj)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
         return obj
 
     def get_all(self):
