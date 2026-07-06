@@ -6,12 +6,12 @@ import type { Teacher } from "./Teacher"
 
 export interface Exam {
   id: number
-  exam_name: string
-  teacher_id: number
-  subject_id: number
-  start_time: string
-  end_time: string
-  duration_minutes: number
+  examName: string
+  teacherID: number
+  subjectID: number
+  startTime: string
+  endTime: string
+  durationMinutes: number
   created_at?: string | null
   status: string
   teacher?: Teacher

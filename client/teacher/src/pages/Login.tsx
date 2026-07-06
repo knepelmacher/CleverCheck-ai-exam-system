@@ -45,7 +45,7 @@ export default function LoginPage() {
 
     try {
       await signIn(values)
-      navigate('/')
+      navigate('/dashboard')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed. Please try again.'
       setServerError(message)
