@@ -6,30 +6,33 @@ type Props = {
 };
 
 const statusLabel = (status: ExamCardModel['status']) => {
-  switch (status) {
-    case 'Active':
-      return 'Active';
-    case 'InProgress':
-      return 'InProgress';
-    case 'Submitted':
-      return 'Submitted';
-    case 'Graded':
-      return 'Graded';
-    default:
-      return 'Closed';
-  }
+  const labels: Record<ExamCardModel['status'], string> = {
+    Active: 'פעיל',
+    Draft: 'עתידי',
+    Closed: 'סגור',
+  };
+  return labels[status] ?? 'Closed';
 };
 
 export const ExamCard = ({ exam }: Props) => {
-  const actionText = exam.status === 'Submitted' || exam.status === 'Graded' ? 'View Results' : exam.status === 'InProgress' ? 'Continue Exam' : 'Start Exam';
-  const destination = exam.status === 'Submitted' || exam.status === 'Graded' ? `/results/${exam.examId * 100}` : `/exam/${exam.examId}`;
+  const actionText =
+    exam.status === 'Closed'
+      ? 'צפייה בתוצאות'
+      : exam.status === 'Active'
+        ? 'המשך מבחן'
+        : 'התחל מבחן';
+
+  const destination =
+    exam.status === 'Closed'
+      ? `/results/${exam.examId}`
+      : `/exam/${exam.examId}`;
 
   return (
     <article style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, display: 'grid', gap: 8 }}>
       <h3 style={{ margin: 0 }}>{exam.name}</h3>
-      <div>Subject: {exam.subject}</div>
-      <div>Status: {statusLabel(exam.status)}</div>
-      <div>Duration: {exam.durationMinutes} mins</div>
+      <div>מקצוע: {exam.subject}</div>
+      <div>סטטוס: {statusLabel(exam.status)}</div>
+      <div>משך: {exam.durationMinutes} דקות</div>
       <Link to={destination} style={{ justifySelf: 'start', padding: '8px 12px', background: '#2563eb', color: 'white', borderRadius: 8, textDecoration: 'none' }}>
         {actionText}
       </Link>

@@ -36,10 +36,6 @@ export const LoginForm = () => {
         סיסמה
         <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
       </label>
-      <label className="checkbox-row">
-        <input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />
-        זכור אותי
-      </label>
       <button type="submit" className="primary-button" disabled={loading}>
         {loading ? 'מתחבר…' : 'התחברות'}
       </button>

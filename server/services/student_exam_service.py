@@ -144,8 +144,12 @@ class StudentExamService:
                 # =========================
                 # ניקוד בטוח
                 # =========================
-                score = getattr(answer, "score", 0) if is_correct and answer else 0
-                total_score += score or 0
+                score = 0
+
+                if is_correct:
+                    score = getattr(question, "max_score", 0) or 0
+
+                total_score += score
 
                 result_questions.append({
                     "questionId": getattr(question, "id", None),
@@ -163,7 +167,26 @@ class StudentExamService:
 
         return {
             "examName": getattr(exam, "exam_name", None),
-            "subject": getattr(exam, "subject_id", None),
+            "subject": exam.subject.subject_name if exam.subject else None,
             "score": total_score,
             "questions": result_questions
+        }
+
+    def save_answer(self, student_exam_id, question_id, answer_text, selected_option_id):
+        self.repo.save_answer(
+            student_exam_id,
+            question_id,
+            answer_text,
+            selected_option_id
+        )
+
+    def update_exam_grades(self, student_exam_id: int):
+        obj = self.repo.update_exam_grades(student_exam_id)
+
+        if not obj:
+            return None
+
+        return {
+            "id": obj.id,
+            "status": obj.status
         }

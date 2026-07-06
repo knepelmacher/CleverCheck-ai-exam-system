@@ -7,15 +7,16 @@ import type { ExamCardModel } from '../types';
 const getStatusMeta = (status: ExamCardModel['status']) => {
   switch (status) {
     case 'Active':
-      return { label: 'פעיל', tone: 'active', description: 'זמין כעת למענה' };
-    case 'InProgress':
-      return { label: 'בתהליך', tone: 'in-progress', description: 'התחלת לענות' };
-    case 'Submitted':
-      return { label: 'ממתין לבדיקה', tone: 'submitted', description: 'ההגשה נקלטה' };
+      return { label: 'פעיל', tone: 'active' };
+
     case 'Draft':
-      return { label: 'הוגש עם ציון', tone: 'Draft', description: 'הציון זמין' };
+      return { label: 'טיוטה', tone: 'upcoming' };
+
+    case 'Closed':
+      return { label: 'סגור', tone: 'completed' };
+
     default:
-      return { label: 'לא זמין', tone: 'closed', description: 'הבחינה סגורה או לא זמינה עדיין' };
+      return { label: 'לא ידוע', tone: 'closed' };
   }
 };
 
@@ -48,23 +49,20 @@ export const DashboardPage = () => {
       return matchesSearch && matchesSubject;
     });
   }, [exams, search, subject]);
-
-  const activeExams = filteredExams.filter((exam) => exam.status === 'Active' || exam.status === 'InProgress');
-  const upcomingExams = filteredExams.filter((exam) => exam.status === 'Closed');
-  const completedExams = filteredExams.filter((exam) => exam.status === 'Submitted' || exam.status === 'Draft');
+      
+  const activeExams = filteredExams.filter((exam) => exam.status === 'Active');
+  const draftExams = filteredExams.filter((exam) => exam.status === 'Draft');
+  const closedExams = filteredExams.filter((exam) => exam.status === 'Closed');
 
   const getActionState = (exam: ExamCardModel) => {
     if (exam.status === 'Active') {
       return { label: 'התחל מבחן', enabled: true, to: `/exam/${exam.examId}` };
     }
-    if (exam.status === 'InProgress') {
-      return { label: 'המשך מבחן', enabled: true, to: `/exam/${exam.examId}` };
-    }
     if (exam.status === 'Draft') {
-      return { label: 'צפייה בתוצאות', enabled: true, to: `/results/${exam.examId}` };
+      return { label: 'לא זמין', enabled: false, to: `#` };
     }
-    if (exam.status === 'Submitted') {
-      return { label: 'בבדיקה', enabled: false, to: '#' };
+    if (exam.status === 'Closed') {
+      return { label: 'צפייה בתוצאות', enabled: true, to: `/results/${exam.examId}` };
     }
     return { label: 'עדיין לא זמין', enabled: false, to: '#' };
   };
@@ -162,11 +160,11 @@ export const DashboardPage = () => {
               <h2>מבחנים עתידיים</h2>
               <p>מבחנים שטרם נפתחים</p>
             </div>
-            <span className="section-count">{upcomingExams.length}</span>
+            <span className="section-count">{draftExams.length}</span>
           </div>
-          {upcomingExams.length ? (
+          {draftExams.length ? (
             <div className="exam-list">
-              {upcomingExams.map((exam) => {
+              {draftExams.map((exam) => {
                 const meta = getStatusMeta(exam.status);
                 return (
                   <article key={exam.examId} className="exam-card">
@@ -197,11 +195,11 @@ export const DashboardPage = () => {
               <h2>מבחנים שהושלמו</h2>
               <p>מבחנים שכבר נענו וניתן לצפות בתוצאות</p>
             </div>
-            <span className="section-count">{completedExams.length}</span>
+            <span className="section-count">{closedExams.length}</span>
           </div>
-          {completedExams.length ? (
+          {closedExams.length ? (
             <div className="exam-list">
-              {completedExams.map((exam) => {
+              {closedExams.map((exam) => {
                 const meta = getStatusMeta(exam.status);
                 const action = getActionState(exam);
                 return (

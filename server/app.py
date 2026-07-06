@@ -23,8 +23,8 @@ from services.grading_service import GradingService
 import os
 from sentence_transformers import SentenceTransformer
 from db_connection_test import health_check
-#import server.models
 from flask_cors import CORS
+from server.jobs.exams_jobs import start_exam_jobs
 
 if health_check():
     print("DB connected successfully ✅")
@@ -49,6 +49,8 @@ app.config["SECRET_KEY"] = Config.SECRET_KEY
   #  create_grading_blueprint(grading_service),
  #   url_prefix='/api/grading'
 #)
+start_exam_jobs()
+
 app.register_blueprint(subject_blueprint, url_prefix='/api/subjects')
 app.register_blueprint(classes_blueprint, url_prefix='/api/classes')
 app.register_blueprint(teachers_blueprint, url_prefix='/api/teachers')
@@ -64,9 +66,6 @@ app.register_blueprint(auth_bp, url_prefix="/api/auth")
 app.register_blueprint(auth_teacher_bp, url_prefix="/api/auth_teacher")
 
 
-
-#app.register_blueprint(exam_classes_blueprint, url_prefix='/api/exam-classes')
-#app.register_blueprint(teacher_classes_blueprint, url_prefix='/api/teacher-classes')
 if __name__ == '__main__':
     app.run(host="localhost", port=5000)
 
