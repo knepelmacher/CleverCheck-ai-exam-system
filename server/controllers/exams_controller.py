@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import Blueprint, request, jsonify
 
 
@@ -34,54 +32,49 @@ def add_exam():
 
 @exams_blueprint.route('', methods=['GET'])
 def get_exams():
-    data = service.get_all_exams()
+    """רשימת מבחנים עבור הסטודנט המחובר, כולל computedStatus."""
+    student_data = get_student_data()
+    if not student_data:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    student_id = student_data.get('student_id')
+    if not student_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = service.get_exams_with_status(student_id)
+
     return jsonify([
         {
-            'id': e.id,
-            'examName': e.exam_name,
-            'teacherID': e.teacher_id,
-            'subjectID': e.subject_id,
-            'startTime': e.start_time,
-            'endTime': e.end_time,
-            'durationMinutes': e.duration_minutes,
-            'status': e.status
+            'id': item['exam'].id,
+            'examName': item['exam'].exam_name,
+            'teacherID': item['exam'].teacher_id,
+            'subject': item['exam'].subject.subject_name if item['exam'].subject else None,
+            'startTime': item['exam'].start_time,
+            'endTime': item['exam'].end_time,
+            'durationMinutes': item['exam'].duration_minutes,
+            'status': item['exam'].status,
+            'computedStatus': item['computedStatus'],
+            'studentExamStatus': item['studentExamStatus'],
         }
-        for e in data
+        for item in data
     ])
 
 
 @exams_blueprint.route('/<int:exam_id>', methods=['GET'])
-def get_student_exam(exam_id):
-    student_id = get_student_data().get('student_id')
-
-    if not student_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
+def get_exam_by_id(exam_id):
+    """שליפת מבחן בודד (ללא StudentExam — השימוש עובר דרך student_exams_controller)."""
     exam = service.get_exam_by_id(exam_id)
-    questions = service.get_questions(exam_id)
-
-    student_exam = service.get_or_create_student_exam(student_id, exam_id)
-
-    answers = service.get_answers(student_exam.id)
-
     return jsonify({
-        "exam": {
-            "id": exam.id,
-            "examName": exam.exam_name,
-            "subjectID": exam.subject_id,
-            "status": exam.status,
-            "durationMinutes": exam.duration_minutes,
-            "startTime": exam.start_time,
-            "endTime": exam.end_time
-        },
-        "studentExam": {
-            "studentExamId": student_exam.id,
-            "endTime": student_exam.end_time
-        },
-        "serverTime": datetime.utcnow().isoformat(),
-        "questions": questions,
-        "answers": answers
+        'id': exam.id,
+        'examName': exam.exam_name,
+        'teacherID': exam.teacher_id,
+        'subject': exam.subject.subject_name if exam.subject else None,
+        'startTime': exam.start_time,
+        'endTime': exam.end_time,
+        'durationMinutes': exam.duration_minutes,
+        'status': exam.status,
     })
+
 
 @exams_blueprint.route('/<int:exam_id>', methods=['PUT'])
 def update_exam(exam_id):
