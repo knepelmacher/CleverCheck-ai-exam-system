@@ -140,25 +140,28 @@ def get_student_exam(exam_id):
 
 @student_exams_blueprint.route('/exam/<int:exam_id>/results', methods=['GET'])
 def get_results_by_exam(exam_id):
-    data = get_student_data()
-    if not data:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    student_id = data.get('student_id')
-    if not student_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    student_exam = service.get_full_exam(student_id, exam_id)
-    if not student_exam:
-        return jsonify({"error": "Student exam not found"}), 404
-
     try:
-        return jsonify(service.get_results(student_exam.id))
-    except CleverCheckBaseError:
-        return jsonify({"error": "Student exam not found"}), 404
-    except Exception as e:
-        return jsonify({"error": "Internal server error"}), 500
+        data = get_student_data()
+        if not data:
+            return jsonify({"error": "Unauthorized"}), 401
 
+        student_id = data.get('student_id')
+        if not student_id:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        student_exam = service.get_full_exam(student_id, exam_id)
+        if not student_exam:
+            return jsonify({"error": "Student exam not found"}), 404
+
+        try:
+            return jsonify(service.get_results(student_exam.id))
+        except CleverCheckBaseError:
+            return jsonify({"error": "Student exam not found"}), 404
+        except Exception as e:
+                return jsonify({"error": "Internal server error"}), 500
+    except Exception as e:
+        print("ERROR:", repr(e))
+        raise
 
 @student_exams_blueprint.route('/<int:student_exam_id>/results', methods=['GET'])
 def get_results(student_exam_id):
