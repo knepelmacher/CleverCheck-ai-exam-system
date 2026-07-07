@@ -1,41 +1,44 @@
-// import { useState } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from './assets/vite.svg'
-// import heroImg from './assets/hero.png'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { ThemeProvider } from '@mui/material/styles'
 import './App.css'
+import TeacherLayout from './components/layout/TeacherLayout'
+import RouteGuard from './components/RouteGuard'
+import { theme } from './theme'
 import LoginPage from './pages/Login'
-
-function HomePage() {
-  return (
-    <main id="home" className="home-container">
-      <div className="home-background"></div>
-      <div className="home-content">
-        <div className="hero-section">
-          <h1 className="brand-title">CleverCheck</h1>
-          <p className="brand-subtitle">Intelligent Test Evaluation System</p>
-          
-          <div className="slogan-container">
-            <p className="slogan-hebrew">דיוק של מורה. מהירות של מערכת.</p>
-            <p className="slogan-english">The accuracy of a teacher, the speed of a system</p>
-          </div>
-
-          <div className="cta-section">
-            <p className="login-prompt">Ready to experience smarter grading?</p>
-            <Link to="/login" className="login-button">Enter CleverCheck</Link>
-          </div>
-        </div>
-      </div>
-    </main>
-  )
-}
+import DashboardPage from './pages/DashboardPage'
+import ExamsPage from './pages/ExamsPage'
+import ExamEditorPage from './pages/ExamEditorPage'
+import ExamResultsPage from './pages/ExamResultsPage'
+import StudentExamDetailsPage from './pages/StudentExamDetailsPage'
+import AdminPage from './pages/AdminPage'
+import AdminStudentsPage from './pages/AdminStudentsPage'
+import AdminTeachersPage from './pages/AdminTeachersPage'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-    </Routes>
+    <ThemeProvider theme={theme}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<RouteGuard allowedRoles={['teacher', 'admin']} />}>
+          <Route element={<TeacherLayout />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/exams" element={<ExamsPage />} />
+            <Route path="/exams/new" element={<ExamEditorPage />} />
+            <Route path="/exams/:id" element={<ExamEditorPage />} />
+            <Route path="/exams/:id/results" element={<ExamResultsPage />} />
+            <Route path="/exams/:id/results/:studentId" element={<StudentExamDetailsPage />} />
+          </Route>
+        </Route>
+        <Route element={<RouteGuard allowedRoles={['admin']} />}>
+          <Route element={<TeacherLayout />}>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/students" element={<AdminStudentsPage />} />
+            <Route path="/admin/teachers" element={<AdminTeachersPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </ThemeProvider>
   )
 }
 

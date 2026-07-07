@@ -44,7 +44,13 @@ export const authService = {
       }),
     });
 
-    await parseJson(response);
+    const result = await parseJson(response);
+    
+    // Check for authentication failure
+    if (result === 'NONE' || result?.error === 'NONE') {
+      throw new Error('Invalid username or password');
+    }
+    
     return { success: true };
   },
 };

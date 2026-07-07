@@ -8,9 +8,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from server.models.exams import Base
 from server.services.jwt_service import get_student_data
+from server.services.jwt_teacher_service import get_teacher_data
 
 engine = create_engine(
-    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 Base.metadata.create_all(engine)
 
@@ -23,9 +24,38 @@ service = ExamService(repo)
 exams_blueprint = Blueprint('exams', __name__)
 
 
+def _parse_datetime(value: str) -> datetime | None:
+    """Parse ISO datetime string from the frontend."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except (ValueError, TypeError):
+        return None
+
+
 @exams_blueprint.route('', methods=['POST'])
 def add_exam():
-    dto = ExamDTO(**request.get_json())
+    data = request.get_json()
+
+    # Get teacher_id from JWT cookie
+    teacher_data = get_teacher_data()
+    teacher_id = teacher_data.get('teacher_id') if teacher_data else None
+
+    if not teacher_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    dto = ExamDTO(
+        exam_name=data.get('name', ''),
+        teacher_id=teacher_id,
+        subject_id=data.get('subject_id', 1),
+        start_time=_parse_datetime(data.get('startTime')),
+        end_time=_parse_datetime(data.get('endTime')),
+        duration_minutes=data.get('duration_minutes', 60),
+        status=data.get('status', 'draft'),
+        class_ids=data.get('classIds', []),
+        questions=data.get('questions', []),
+    )
     service.add_exam(dto)
     return jsonify({'message': 'Exam added'}), 201
 
