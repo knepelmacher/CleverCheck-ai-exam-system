@@ -36,10 +36,6 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
 app.config["SECRET_KEY"] = Config.SECRET_KEY
 #init_db(app)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 6d6dc75dc45c1149bcb9ac3d3ecb3c9682740656
 # 1. טוען מודל
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # MODEL_PATH = os.path.join(BASE_DIR, 'my_model')

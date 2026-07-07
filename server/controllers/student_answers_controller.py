@@ -7,7 +7,7 @@ from server.repositories.student_answer_repository import StudentAnswerRepositor
 from server.services.student_answer_service import StudentAnswerService
 
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 
 Base.metadata.create_all(engine)

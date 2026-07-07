@@ -12,7 +12,7 @@ from server.repositories.student_exam_repository import StudentExamRepository
 from server.models.student_exams import Base
 
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 
 Base.metadata.create_all(engine)
@@ -69,7 +69,7 @@ def get_student_me():
     try:
         from server.services.jwt_service import get_student_data
         data = get_student_data()
-        print(data)
+
         return jsonify({
             'student_id': data['student_id'],
             'role': data['role'],

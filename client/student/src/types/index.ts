@@ -82,5 +82,6 @@ export interface ResultsPayload {
   examName: string;
   subject: string;
   score: number;
+  status: string;
   questions: ResultQuestion[];
 }

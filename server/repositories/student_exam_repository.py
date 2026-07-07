@@ -59,13 +59,14 @@ class StudentExamRepository:
         self.session.commit()
 
     def update_exam_grades(self, student_exam_id: int):
+        """משנה סטטוס ל-Submitted ומבצע commit"""
         try:
             obj = self.session.get(StudentExam, student_exam_id)
 
             if not obj:
                 return None
 
-            obj.status = 'Submitted'
+            # הסטטוס לא נקבע פה — מי שקורא ל-repository אחראי על זה
             self.session.commit()
 
             return obj
