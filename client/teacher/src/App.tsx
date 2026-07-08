@@ -4,6 +4,7 @@ import './App.css'
 import TeacherLayout from './components/layout/TeacherLayout'
 import RouteGuard from './components/RouteGuard'
 import { theme } from './theme'
+import HomePage from './pages/HomePage'
 import LoginPage from './pages/Login'
 import DashboardPage from './pages/DashboardPage'
 import ExamsPage from './pages/ExamsPage'
@@ -18,10 +19,10 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<RouteGuard allowedRoles={['teacher', 'admin']} />}>
           <Route element={<TeacherLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/exams" element={<ExamsPage />} />
             <Route path="/exams/new" element={<ExamEditorPage />} />

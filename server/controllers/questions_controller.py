@@ -5,7 +5,7 @@ from server.repositories.question_repository import QuestionRepository
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from server.models.questions import Base
-
+"""
 engine = create_engine(
     'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
@@ -13,7 +13,10 @@ Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
+"""
+from server.db_connection import SessionLocal
 
+session = SessionLocal()
 repo = QuestionRepository(session)
 service = QuestionService(repo)
 

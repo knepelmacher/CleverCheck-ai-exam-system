@@ -3,6 +3,7 @@ import { Box, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableCont
 import { Link } from 'react-router-dom'
 import { getExams } from '../api/exam.api'
 import type { Exam } from '../models/Exam'
+import { getExamStatusInfo } from '../utils/examStatus'
 
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([])
@@ -25,6 +26,7 @@ export default function ExamsPage() {
           <TableHead>
             <TableRow>
               <TableCell sx={{ color: 'primary.main', fontWeight: 700 }}>שם מבחן</TableCell>
+              <TableCell sx={{ color: 'primary.main', fontWeight: 700 }}>מורה</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 700 }}>סטטוס</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 700 }}>שאלות</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 700 }}>פעולות</TableCell>
@@ -34,8 +36,11 @@ export default function ExamsPage() {
             {exams.map((exam) => (
               <TableRow key={exam.id}>
                 <TableCell>{exam.examName}</TableCell>
-                <TableCell><Chip label={exam.status === 'published' ? 'פורסם' : 'טיוטה'} color={exam.status === 'published' ? 'primary' : 'default'} /></TableCell>
-                <TableCell>{exam.questions?.length ?? 0}</TableCell>
+                <TableCell>{exam.teacherName ?? exam.teacherID}</TableCell>
+                <TableCell>
+                  <Chip label={getExamStatusInfo(exam.status).label} color={getExamStatusInfo(exam.status).color} />
+                </TableCell>
+                <TableCell>{exam.questionCount ?? exam.questions?.length ?? 0}</TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={1}>
                     <Button component={Link} to={`/exams/${exam.id}`} size="small" variant="outlined">פתח</Button>

@@ -11,6 +11,7 @@ export interface Question {
   question_text: string
   question_type_id: number
   max_score: number
+  correct_answer?: string
   exam?: Exam
   question_type?: QuestionType
   options?: Option[]

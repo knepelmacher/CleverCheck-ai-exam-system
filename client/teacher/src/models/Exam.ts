@@ -8,6 +8,7 @@ export interface Exam {
   id: number
   examName: string
   teacherID: number
+  teacherName?: string
   subjectID: number
   startTime: string
   endTime: string
@@ -16,7 +17,9 @@ export interface Exam {
   status: string
   teacher?: Teacher
   subject?: Subject
+  questionCount?: number
   questions?: Question[]
   student_exams?: StudentExam[]
   exam_classes?: ExamClass[]
+  classIds?: number[]
 }

@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material'
 import { useNavigate, useParams } from 'react-router-dom'
-import { createExam, getExamById } from '../api/exam.api'
+import { createExam, getExamById, updateExam } from '../api/exam.api'
 import { getClasses } from '../api/class.api'
 import type { ClassDTO } from '../api/class.api'
 import type { ExamDraft, QuestionDraft, QuestionTypeValue } from '../models/ExamDraft'
@@ -67,7 +67,7 @@ export default function ExamEditorPage() {
           setDraft({
             id: String(exam.id),
             name: exam.examName,
-            classIds: (exam as any).classIds ?? [],
+            classIds: exam.classIds ?? [],
             baseScore: exam.questions?.reduce((sum, q) => sum + (q.max_score ?? 10), 0) ?? 100,
             startTime: exam.startTime ? exam.startTime.slice(0, 16) : '',
             endTime: exam.endTime ? exam.endTime.slice(0, 16) : '',
@@ -103,7 +103,11 @@ export default function ExamEditorPage() {
   }
 
   const handleSave = async () => {
-    await createExam(draft)
+    if (isEditing) {
+      await updateExam(Number(id), draft)
+    } else {
+      await createExam(draft)
+    }
     navigate('/exams')
   }
 
@@ -197,9 +201,11 @@ export default function ExamEditorPage() {
                       return { ...current, options: nextOptions }
                     })} />
                   ))}
-                  <TextField label="תשובה נכונה" value={question.correctAnswer} onChange={(event) => updateQuestion(question.id, (current) => ({ ...current, correctAnswer: event.target.value }))} />
+                  <TextField label="תשובה נכונה (העתק את הטקסט של התשובה)" value={question.correctAnswer} onChange={(event) => updateQuestion(question.id, (current) => ({ ...current, correctAnswer: event.target.value }))} />
                 </Stack>
-              ) : null}
+              ) : (
+                <TextField label="תשובת המורה הנכונה" value={question.correctAnswer} onChange={(event) => updateQuestion(question.id, (current) => ({ ...current, correctAnswer: event.target.value }))} />
+              )}
             </Stack>
           </CardContent>
         </Card>
