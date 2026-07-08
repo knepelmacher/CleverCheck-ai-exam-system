@@ -88,8 +88,8 @@ class ExamService:
     def get_all_exams(self):
         return self.repo.get_all()
 
-    def get_exams_with_status(self, student_id: int):
-        exams = self.repo.get_all_for_student(student_id)
+    def get_exams_with_status(self, student_id: int, class_id: int = None):
+        exams = self.repo.get_all_for_student(student_id, class_id)
         now = datetime.now()
         result = []
 

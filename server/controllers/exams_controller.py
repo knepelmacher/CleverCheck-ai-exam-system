@@ -70,10 +70,12 @@ def get_exams():
         return jsonify({"error": "Unauthorized"}), 401
 
     student_id = student_data.get('student_id')
+    class_id = student_data.get('class_id')
+
     if not student_id:
         return jsonify({"error": "Unauthorized"}), 401
 
-    data = service.get_exams_with_status(student_id)
+    data = service.get_exams_with_status(student_id, class_id)
 
     return jsonify([
         {

@@ -1,10 +1,8 @@
 from datetime import datetime
 import threading
-
 from flask import Blueprint, request, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from server.dtos.student_exam_dto import StudentExamDTO
 from server.exceptions.exceptions import CleverCheckBaseError
 from server.services.jwt_service import get_student_data
@@ -15,6 +13,9 @@ from server.repositories.student_answer_repository import StudentAnswerRepositor
 from server.repositories.question_repository import QuestionRepository
 from server.repositories.teacher_answer_repository import TeacherAnswerRepository
 from server.models.student_exams import Base, StudentExam
+from server.models import StudentExam
+from server.db_connection import SessionLocal
+
 
 engine = create_engine(
     'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
@@ -29,6 +30,49 @@ repo = StudentExamRepository(session)
 student_answer_repo = StudentAnswerRepository(session)
 question_repo = QuestionRepository(session)
 teacher_answer_repo = TeacherAnswerRepository(session)
+
+
+#  שינוי סטטוס מיידי ל-Submitted — בלי ציונים
+#  הפעלת חישוב ציונים ברקע (thread נפרד)
+
+def submit_student_exam(student_exam_id: int) -> bool:
+    session = SessionLocal()
+
+    try:
+        # שינוי סטטוס בצורה אטומית:
+        # רק מבחן שעדיין InProgress יעבור ל-Submitted
+        updated_rows = session.query(StudentExam).filter(
+            StudentExam.id == student_exam_id,
+            StudentExam.status == "InProgress"
+        ).update(
+            {
+                StudentExam.status: "Submitted"
+            },
+            synchronize_session=False
+        )
+
+        session.commit()
+
+        # אם לא השתנה כלום:
+        # המבחן כבר Submitted או לא קיים
+        if updated_rows == 0:
+            return False
+
+        # רק מי שביצע את שינוי הסטטוס מפעיל חישוב
+        threading.Thread(
+            target=_calculate_grades_async,
+            args=(student_exam_id,),
+            daemon=True
+        ).start()
+
+        return True
+
+    except Exception:
+        session.rollback()
+        raise
+
+    finally:
+        session.close()
 
 
 def _build_grades_service(new_session):
@@ -111,17 +155,19 @@ def finish(student_exam_id):
             "success": False,
             "message": "לא נמצא מבחן תלמיד"
         }), 404
-
-    # 2. שינוי סטטוס מיידי ל-Submitted — בלי ציונים
-    exam.status = 'Submitted'
-    session.commit()
-
-    # 3. הפעלת חישוב ציונים ברקע (thread נפרד)
-    threading.Thread(
-        target=_calculate_grades_async,
-        args=(student_exam_id,),
-        daemon=True,
-    ).start()
+    #2. מניעת שליחה כפולה
+    if exam.status == "Submitted":
+        return jsonify({
+            "success": True,
+            "message": "המבחן כבר נשלח",
+            "data": {
+                "id": exam.id,
+                "status": exam.status,
+            }
+        }), 200
+    # 3. שינוי סטטוס מיידי ל-Submitted — בלי ציונים
+    #  הפעלת חישוב ציונים ברקע (thread נפרד)
+    submit_student_exam(student_exam_id)
 
     return jsonify({
         "success": True,
@@ -135,67 +181,79 @@ def finish(student_exam_id):
 @student_exams_blueprint.route('/exam/<int:exam_id>', methods=['GET'])
 def get_student_exam(exam_id):
     data = get_student_data()
+
     if not data:
-        return jsonify({'message': 'StudentExam not found'}), 404
+        return jsonify({'message': 'Student not found'}), 404
+
     student_id = data.get('student_id')
 
     if not student_id:
         return jsonify({"error": "Unauthorized"}), 401
 
-    student_exam = service.get_full_exam(student_id, exam_id)
+    student_exam = service.get_student_exam(student_id, exam_id)
+
+    # יצירה ראשונית
+    if not student_exam:
+        student_exam = service.create_student_exam(
+            student_id=student_id,
+            exam_id=exam_id,
+            status='NotStarted'
+        )
+
     exam = student_exam.exam
 
     if student_exam.status == 'NotStarted':
         student_exam.status = 'InProgress'
         service.repo.session.commit()
 
+
     return jsonify({
-        "exam": {
-            "id": exam.id,
-            "name": exam.exam_name,
-            "subject": exam.subject.subject_name if exam.subject else None,
-            "status": exam.status,
-            "durationMinutes": exam.duration_minutes,
-            "startTime": exam.start_time,
-            "endTime": exam.end_time,
-        },
+            "exam": {
+                "id": exam.id,
+                "name": exam.exam_name,
+                "subject": exam.subject.subject_name if exam.subject else None,
+                "status": exam.status,
+                "durationMinutes": exam.duration_minutes,
+                "startTime": exam.start_time,
+                "endTime": exam.end_time,
+            },
 
-        "studentExam": {
-            "id": student_exam.id,
-            "score": student_exam.score,
-            "status": student_exam.status,
-        },
+            "studentExam": {
+                "id": student_exam.id,
+                "score": student_exam.score,
+                "status": student_exam.status,
+            },
 
-        "questions": [
-            {
-                "id": q.id,
-                "text": q.question_text,
-                "typeId": q.question_type_id,
-                "maxScore": q.max_score,
-                "questionNumber": q.question_number,
+            "questions": [
+                {
+                    "id": q.id,
+                    "text": q.question_text,
+                    "typeId": q.question_type_id,
+                    "maxScore": q.max_score,
+                    "questionNumber": q.question_number,
 
-                "options": [
-                    {
-                        "id": o.id,
-                        "text": o.option_text
-                    }
-                    for o in q.options
-                ] if q.question_type_id == 1 else []
-            }
-            for q in exam.questions
-        ],
+                    "options": [
+                        {
+                            "id": o.id,
+                            "text": o.option_text
+                        }
+                        for o in q.options
+                    ] if q.question_type_id == 1 else []
+                }
+                for q in exam.questions
+            ],
 
-        "answers": [
-            {
-                "questionId": a.question_id,
-                "answerText": a.answer_text,
-                "selectedOptionId": a.selected_option_id,
-                "score": a.score
-            }
-            for a in student_exam.answers
-        ],
-        "serverTime": datetime.now()
-    })
+            "answers": [
+                {
+                    "questionId": a.question_id,
+                    "answerText": a.answer_text,
+                    "selectedOptionId": a.selected_option_id,
+                    "score": a.score
+                }
+                for a in student_exam.answers
+            ],
+            "serverTime": datetime.now()
+        })
 
 @student_exams_blueprint.route('/exam/<int:exam_id>/results', methods=['GET'])
 def get_results_by_exam(exam_id):
@@ -234,8 +292,6 @@ def get_results(student_exam_id):
 @student_exams_blueprint.route('/<int:student_exam_id>/answers', methods=['POST'])
 def save_answer(student_exam_id):
     data = request.get_json()
-    print("DATA:", data)
-    print("STUDENT_EXAM_ID:", student_exam_id)
     question_id = data.get("questionId")
     answer_text = data.get("answerText")
     selected_option_id = data.get("selectedOptionId")
@@ -243,11 +299,18 @@ def save_answer(student_exam_id):
     if question_id is None:
         return jsonify({"error": "questionId is required"}), 400
 
-    service.save_answer(
-        student_exam_id=student_exam_id,
-        question_id=question_id,
-        answer_text=answer_text,
-        selected_option_id=selected_option_id
-    )
+    try:
+        service.save_answer(
+            student_exam_id=student_exam_id,
+            question_id=question_id,
+            answer_text=answer_text,
+            selected_option_id=selected_option_id
+        )
+
+        return jsonify({"message": "Answer saved"}), 200
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": "Save failed"}), 500
 
     return jsonify({"message": "Answer saved"}), 200

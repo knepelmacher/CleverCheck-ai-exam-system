@@ -74,6 +74,7 @@ def get_student_me():
             'student_id': data['student_id'],
             'role': data['role'],
             'student_name': data.get('student_name', 'student'),
+            'class_id': data.get('class_id'),
         }), 200
     except Exception:
         return jsonify({'error': 'טוקן לא תקין'}), 401

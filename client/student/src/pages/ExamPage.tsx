@@ -8,6 +8,7 @@ import type { AnswerValue, QuestionMarkStatus } from '../types';
 import { loadExamUiState, saveExamUiState } from '../utils/storage';
 import { useAutoSaveExam } from '../hooks/useAutoSaveExam';
 
+
 const formatTime = (ms: number) => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const hours = Math.floor(totalSeconds / 3600);
@@ -35,6 +36,8 @@ const getQuestionBadge = (questionId: number, answers: Record<number, AnswerValu
 };
 
 export const ExamPage = () => {
+  const [serverOffline, setServerOffline] = useState(
+  localStorage.getItem('serverOffline') !== null);
   const { examId } = useParams();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state: { isAuthenticated: boolean }) => state.isAuthenticated);
@@ -103,21 +106,72 @@ export const ExamPage = () => {
     };
   }, [examId, reset, setExamData]);
 
-  const handleSubmit = async () => {
-    if (submitting) return;
-    setSubmitting(true);
-    const studentExamId = studentExam?.id ?? 0;
-    try {
-      await flushQueue();
-      await examService.submitExam(studentExamId);
-    } catch {
-      // keep local state and retry later
-    } finally {
-      setStatus('submitted');
-      navigate('/dashboard', { replace: true });
-      setSubmitting(false);
+// הזהרת יציאה מהמבחן בנפילת שרת
+useEffect(() => {
+  const handler = (event: BeforeUnloadEvent) => {
+    if (serverOffline) {
+      event.preventDefault();
+      event.returnValue = '';
     }
   };
+
+  window.addEventListener('beforeunload', handler);
+
+  return () => {
+    window.removeEventListener('beforeunload', handler);
+  };
+}, [serverOffline]);
+
+// ניסיון סנכרון כשהשרת חוזר
+useEffect(() => {
+  if (!serverOffline) return;
+
+  const interval = window.setInterval(async () => {
+    try {
+      await flushQueue();
+
+      localStorage.removeItem('serverOffline');
+      setServerOffline(false);
+
+    } catch {
+      // עדיין אין שרת
+    }
+  }, 10000);
+
+  return () => clearInterval(interval);
+}, [serverOffline]);
+
+const handleSubmit = async () => {
+  if (submitting) return;
+
+  setSubmitting(true);
+
+  const studentExamId = studentExam?.id ?? 0;
+
+  try {
+    await flushQueue();
+    await examService.submitExam(studentExamId);
+
+    // רק אם ההגשה הצליחה באמת
+    setStatus('submitted');
+    navigate('/dashboard', { replace: true });
+
+  } catch {
+    // השרת לא זמין - שומרים מקומית ומנסים בעתיד
+    localStorage.setItem(
+      'pendingSubmit',
+      JSON.stringify({
+        studentExamId,
+        createdAt: new Date().toISOString(),
+      })
+    );
+
+    setExamExpired(true);
+
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   useEffect(() => {
     if (!recovered || deadlineMs === null || examExpired || submitting) {
@@ -147,6 +201,7 @@ export const ExamPage = () => {
 
   const persistExamState = () => {
     const state = useExamStore.getState();
+    if(!studentExam?.id) return;
     const studentExamId = studentExam?.id ?? 0;
     saveExamUiState(studentExamId, state.answers, state.currentQuestion, state.markedQuestions, state.visitedQuestions, state.inProgressQuestions);
   };
@@ -232,10 +287,18 @@ export const ExamPage = () => {
   };
 
   return (
+ 
     <div className="page-shell" dir="rtl">
       <div className="exam-shell">
         <aside className="exam-side-panel left-panel">
           <div className="panel-card">
+              {serverOffline && (
+                <div className="warning">
+                    ⚠️ אין תקשורת עם השרת.
+                    ניתן להמשיך לענות, אך אין לסגור את חלון המבחן.
+                    התשובות נשמרות זמנית ויישלחו כאשר החיבור יחזור.
+               </div>
+             )}
             <button className="ghost-button" onClick={() => setTimerVisible(!timerVisible)}>
               {timerVisible ? 'הסתר שעון' : 'הצג שעון'}
             </button>

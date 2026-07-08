@@ -35,28 +35,29 @@ class StudentExamRepository:
         return obj
 
     def save_answer(self, student_exam_id, question_id, answer_text, selected_option_id):
-        existing = self.session.query(StudentAnswer).filter_by(
-            student_exam_id=student_exam_id,
-            question_id=question_id
-        ).first()
-
-        if existing:
-            existing.answer_text = answer_text
-            existing.selected_option_id = selected_option_id
-        else:
-            new_answer = StudentAnswer(
+        try:
+            existing = self.session.query(StudentAnswer).filter_by(
                 student_exam_id=student_exam_id,
-                question_id=question_id,
-                answer_text=answer_text,
-                selected_option_id=selected_option_id
-            )
-            try:
-                self.session.add(new_answer)
-            except Exception as e:
-                self.session.rollback()
-                raise e
+                question_id=question_id
+            ).first()
 
-        self.session.commit()
+            if existing:
+                existing.answer_text = answer_text
+                existing.selected_option_id = selected_option_id
+            else:
+                new_answer = StudentAnswer(
+                    student_exam_id=student_exam_id,
+                    question_id=question_id,
+                    answer_text=answer_text,
+                    selected_option_id=selected_option_id
+                )
+                self.session.add(new_answer)
+
+            self.session.commit()
+
+        except Exception as e:
+            self.session.rollback()
+            raise e
 
     def update_exam_grades(self, student_exam_id: int):
         """משנה סטטוס ל-Submitted ומבצע commit"""

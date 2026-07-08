@@ -201,3 +201,15 @@ class StudentExamService:
             "status": exam.status,
             "score": exam.score if hasattr(exam, 'score') else None,
         }
+
+    def create_student_exam(self, student_id, exam_id, status='NotStarted'):
+        student_exam = StudentExam(
+            student_id=student_id,
+            exam_id=exam_id,
+            status=status
+        )
+
+        self.repo.session.add(student_exam)
+        self.repo.session.commit()
+
+        return student_exam

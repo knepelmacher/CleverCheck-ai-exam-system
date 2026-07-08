@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-model_path = r"C:\git\CleverCheck\server\my_model\hebert_model_download (2)"
+model_path = r"/server/my_model/hebert_model_download (2)"
 
 tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
 model = AutoModelForSequenceClassification.from_pretrained(model_path, local_files_only=True)

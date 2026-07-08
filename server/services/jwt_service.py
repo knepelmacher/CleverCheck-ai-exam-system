@@ -10,6 +10,7 @@ def create_token(student: dict):
         "student_id": student["id"],
         "role": student["role"],
         "student_name": student["student_name"],
+        "class_id": student.get("class_id"),
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }
 

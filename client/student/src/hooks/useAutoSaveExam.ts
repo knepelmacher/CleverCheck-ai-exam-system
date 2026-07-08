@@ -23,9 +23,7 @@ export const useAutoSaveExam = ({ studentExamId, getAnswers, enabled }: Params) 
       flushingRef.current = false;
       return;
     }
-
-    queueRef.current.clear();
-
+        
     try {
       for (const [questionId, value] of entries) {
         await examService.saveAnswer({
@@ -34,12 +32,31 @@ export const useAutoSaveExam = ({ studentExamId, getAnswers, enabled }: Params) 
           answerText: value.answerText ?? null,
           selectedOptionId: value.selectedOptionId ?? null,
         });
+
+        queueRef.current.delete(questionId);
       }
+
+      localStorage.removeItem('serverOffline');
+
+    } catch (error) {
+      console.error('Auto save failed', error);
+
+      localStorage.setItem(
+        'serverOffline',
+        JSON.stringify({
+          value: true,
+          time: new Date().toISOString(),
+        })
+      );
+
+      window.setTimeout(() => {
+        void flushQueue();
+      }, 5000);
+
     } finally {
       flushingRef.current = false;
     }
-  };
-
+  }
   const queueSave = (questionId: number, value: AnswerValue) => {
     queueRef.current.set(questionId, value);
 

@@ -194,6 +194,20 @@ button:disabled { cursor: not-allowed; opacity: 0.7; }
 .login-form h2 { margin: 0 0 4px; font-size: 1.5rem; }
 .login-form label { display: grid; gap: 6px; color: #374151; }
 .login-form input { border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 12px; }
+.password-wrapper { position: relative; display: flex; align-items: center; }
+.password-wrapper input { width: 100%; padding-left: 40px; }
+.toggle-password {
+  position: absolute;
+  left: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+.toggle-password:hover { color: #6b7280; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; }
 .form-error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 10px 12px; }
 
