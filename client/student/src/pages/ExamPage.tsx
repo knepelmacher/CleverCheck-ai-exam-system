@@ -6,6 +6,8 @@ import { useExamStore } from '../store/examStore';
 import { useUIStore } from '../store/uiStore';
 import type { AnswerValue, QuestionMarkStatus } from '../types';
 import { loadExamUiState, saveExamUiState } from '../utils/storage';
+import { useAutoSaveExam } from '../hooks/useAutoSaveExam';
+
 
 const formatTime = (ms: number) => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -14,6 +16,8 @@ const formatTime = (ms: number) => {
   const seconds = totalSeconds % 60;
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
+
+const getQuestionKey = (question: any, fallbackIndex: number) => Number(question?.questionId ?? question?.id ?? question?.questionNumber ?? fallbackIndex + 1);
 
 const getQuestionBadge = (questionId: number, answers: Record<number, AnswerValue>, markedQuestions: number[], inProgressQuestions: number[], index: number, currentQuestion: number) => {
   if (markedQuestions.includes(questionId)) {
@@ -32,27 +36,47 @@ const getQuestionBadge = (questionId: number, answers: Record<number, AnswerValu
 };
 
 export const ExamPage = () => {
+  const [serverOffline, setServerOffline] = useState(
+  localStorage.getItem('serverOffline') !== null);
   const { examId } = useParams();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state: { isAuthenticated: boolean }) => state.isAuthenticated);
   const loadingAuth = useAuthStore((state: { loading: boolean }) => state.loading);
-  const { exam, questions, answers, currentQuestion, markedQuestions, inProgressQuestions, setExamData, setAnswer, setCurrentQuestion, setQuestionStatus, setStatus, reset } = useExamStore();
-  const { timerVisible, sidebarOpen, setTimerVisible, setSidebarOpen } = useUIStore();
+  const { exam, studentExam, questions, answers, currentQuestion, markedQuestions, inProgressQuestions, setExamData, setAnswer, setCurrentQuestion, setQuestionStatus, setStatus, reset } = useExamStore();  const { timerVisible, sidebarOpen, setTimerVisible, setSidebarOpen } = useUIStore();
   const [remainingMs, setRemainingMs] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [recovered, setRecovered] = useState(false);
+  const [examExpired, setExamExpired] = useState(false);
+  const [deadlineMs, setDeadlineMs] = useState<number | null>(null);
+  const [serverTimeOffsetMs, setServerTimeOffsetMs] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const questionRefs = useRef<Array<HTMLElement | null>>([]);
+
+  const { queueSave, flushQueue } = useAutoSaveExam({
+    studentExamId: studentExam?.id ?? 0,
+    getAnswers: () => useExamStore.getState().answers,
+    enabled: !examExpired,
+  });
 
   useEffect(() => {
     const loadExam = async () => {
       setLoading(true);
       const payload = await examService.getExam(examId ?? '1');
       const recoveredState = loadExamUiState();
+      const browserNowMs = Date.now();
+      const serverTimeMs = Number(new Date(payload.serverTime).getTime());
+      const startTimeMs = Number(new Date(payload.exam?.startTime ?? 0).getTime());
+      const endTimeMs = Number(new Date(payload.exam?.endTime ?? 0).getTime());
+      const durationMinutes = Number(payload.exam?.durationMinutes ?? 0);
+      const hasValidDeadline = Number.isFinite(serverTimeMs) && ((Number.isFinite(endTimeMs) && endTimeMs > 0) || (Number.isFinite(startTimeMs) && startTimeMs > 0 && durationMinutes > 0));
+      const offsetMs = hasValidDeadline ? serverTimeMs - browserNowMs : 0;
+      const effectiveEndTimeMs = Number.isFinite(endTimeMs) && endTimeMs > 0 ? endTimeMs : (Number.isFinite(startTimeMs) && startTimeMs > 0 && durationMinutes > 0 ? startTimeMs + durationMinutes * 60 * 1000 : 0);
+      const initialRemainingMs = hasValidDeadline ? Math.max(0, effectiveEndTimeMs - (browserNowMs + offsetMs)) : 0;
+      const isExpired = !hasValidDeadline || initialRemainingMs <= 0;
       const mergedAnswers = {
-        ...payload.answers.reduce((acc: Record<number, AnswerValue>, answer: any) => ({ ...acc, [answer.questionId]: { answerText: answer.answerText ?? undefined, selectedOptionId: answer.selectedOptionId ?? undefined } }), {}),
+        ...payload.answers.reduce((acc: Record<number, AnswerValue>, answer: any, index: number) => ({ ...acc, [getQuestionKey({ questionId: answer?.questionId ?? answer?.question_id, id: answer?.id, questionNumber: answer?.questionNumber }, index)]: { answerText: answer.answerText ?? undefined, selectedOptionId: answer.selectedOptionId ?? undefined } }), {}),
         ...recoveredState.answers,
       };
       const mergedPayload = {
@@ -68,7 +92,10 @@ export const ExamPage = () => {
         visitedQuestions: recoveredState.visitedQuestions ?? [],
       };
       setExamData(mergedPayload);
-      setRemainingMs(new Date(payload.studentExam.endTime).getTime() - new Date(payload.serverTime).getTime());
+      setRemainingMs(initialRemainingMs);
+      setDeadlineMs(effectiveEndTimeMs);
+      setServerTimeOffsetMs(offsetMs);
+      setExamExpired(isExpired);
       setRecovered(true);
       setLoading(false);
     };
@@ -79,40 +106,103 @@ export const ExamPage = () => {
     };
   }, [examId, reset, setExamData]);
 
-  useEffect(() => {
-    if (!recovered || remainingMs <= 0) {
-      return;
-    }
-    const interval = window.setInterval(() => {
-      setRemainingMs((value) => value - 1000);
-    }, 1000);
-    return () => window.clearInterval(interval);
-  }, [recovered, remainingMs]);
-
-  useEffect(() => {
-    if (recovered && remainingMs <= 0 && !submitting) {
-      void handleSubmit();
-    }
-  }, [recovered, remainingMs, submitting]);
-
-  const handleSubmit = async () => {
-    if (submitting) return;
-    setSubmitting(true);
-    const studentExamId = Number(exam?.examId ?? 0) * 100;
-    try {
-      await examService.submitExam(studentExamId);
-      setStatus('submitted');
-      navigate('/dashboard', { replace: true });
-    } catch {
-      // keep local state and retry later
-    } finally {
-      setSubmitting(false);
+// הזהרת יציאה מהמבחן בנפילת שרת
+useEffect(() => {
+  const handler = (event: BeforeUnloadEvent) => {
+    if (serverOffline) {
+      event.preventDefault();
+      event.returnValue = '';
     }
   };
 
+  window.addEventListener('beforeunload', handler);
+
+  return () => {
+    window.removeEventListener('beforeunload', handler);
+  };
+}, [serverOffline]);
+
+// ניסיון סנכרון כשהשרת חוזר
+useEffect(() => {
+  if (!serverOffline) return;
+
+  const interval = window.setInterval(async () => {
+    try {
+      await flushQueue();
+
+      localStorage.removeItem('serverOffline');
+      setServerOffline(false);
+
+    } catch {
+      // עדיין אין שרת
+    }
+  }, 10000);
+
+  return () => clearInterval(interval);
+}, [serverOffline]);
+
+const handleSubmit = async () => {
+  if (submitting) return;
+
+  setSubmitting(true);
+
+  const studentExamId = studentExam?.id ?? 0;
+
+  try {
+    await flushQueue();
+    await examService.submitExam(studentExamId);
+
+    // רק אם ההגשה הצליחה באמת
+    setStatus('submitted');
+    navigate('/dashboard', { replace: true });
+
+  } catch {
+    // השרת לא זמין - שומרים מקומית ומנסים בעתיד
+    localStorage.setItem(
+      'pendingSubmit',
+      JSON.stringify({
+        studentExamId,
+        createdAt: new Date().toISOString(),
+      })
+    );
+
+    setExamExpired(true);
+
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+  useEffect(() => {
+    if (!recovered || deadlineMs === null || examExpired || submitting) {
+      return;
+    }
+
+    const tick = () => {
+      if (!Number.isFinite(deadlineMs)) {
+        setRemainingMs(0);
+        setExamExpired(true);
+        return;
+      }
+
+      const nextRemainingMs = Math.max(0, deadlineMs - (Date.now() + serverTimeOffsetMs));
+      setRemainingMs(Number.isFinite(nextRemainingMs) ? nextRemainingMs : 0);
+
+      if (nextRemainingMs <= 0) {
+        setExamExpired(true);
+        void handleSubmit();
+      }
+    };
+
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
+  }, [recovered, deadlineMs, serverTimeOffsetMs, examExpired, submitting, handleSubmit]);
+
   const persistExamState = () => {
     const state = useExamStore.getState();
-    const studentExamId = Number(exam?.examId ?? 0) * 100;
+    if(!studentExam?.id) return;
+    const studentExamId = studentExam?.id ?? 0;
     saveExamUiState(studentExamId, state.answers, state.currentQuestion, state.markedQuestions, state.visitedQuestions, state.inProgressQuestions);
   };
 
@@ -125,7 +215,19 @@ export const ExamPage = () => {
   };
 
   const currentQuestionData = questions[currentQuestion];
-  const answeredCount = useMemo(() => Object.values(answers).filter((value) => Boolean(value.answerText) || value.selectedOptionId !== undefined).length, [answers]);
+  const answeredCount = useMemo(() => {
+    return questions.filter((q) => {
+      const key = q.questionId ?? q.id;
+      const value = answers[key];
+
+      if (!value) return false;
+
+      return (
+        (value.answerText?.trim()?.length ?? 0) > 0 ||
+        value.selectedOptionId != null
+      );
+    }).length;
+  }, [answers, questions]);
   const unansweredCount = useMemo(() => questions.length - answeredCount, [answers, questions.length]);
   const markedCount = markedQuestions.length;
   const inProgressCount = inProgressQuestions.length;
@@ -158,32 +260,45 @@ export const ExamPage = () => {
     return <div className="page-loading">טוען מבחן…</div>;
   }
 
+  if (examExpired) {
+    return <div className="page-loading">הזמן למבחן זה הסתיים. לא ניתן להמשיך לענות.</div>;
+  }
+
   if (!currentQuestionData) {
     return <div className="page-loading">המבחן לא נמצא.</div>;
   }
 
-  const updateAnswer = async (questionId: number, value: AnswerValue) => {
-    setAnswer(questionId, value);
-    const studentExamId = Number(exam?.examId ?? 0) * 100;
-    await examService.saveAnswer({
-      studentExamId,
-      questionId,
-      answerText: value.answerText ?? null,
-      selectedOptionId: value.selectedOptionId ?? null,
-    });
-    persistExamState();
+  const updateAnswer = (questionId: number, value: AnswerValue) => {
+  if (examExpired) return;
+
+  setAnswer(questionId, value);
+  persistExamState();
+
+  queueSave(questionId, value);
   };
 
   const toggleQuestionStatus = (questionId: number, status: QuestionMarkStatus) => {
+    if (examExpired) {
+      return;
+    }
+
     setQuestionStatus(questionId, status);
     persistExamState();
   };
 
   return (
+ 
     <div className="page-shell" dir="rtl">
       <div className="exam-shell">
         <aside className="exam-side-panel left-panel">
           <div className="panel-card">
+              {serverOffline && (
+                <div className="warning">
+                    ⚠️ אין תקשורת עם השרת.
+                    ניתן להמשיך לענות, אך אין לסגור את חלון המבחן.
+                    התשובות נשמרות זמנית ויישלחו כאשר החיבור יחזור.
+               </div>
+             )}
             <button className="ghost-button" onClick={() => setTimerVisible(!timerVisible)}>
               {timerVisible ? 'הסתר שעון' : 'הצג שעון'}
             </button>
@@ -240,11 +355,12 @@ export const ExamPage = () => {
 
           <div className="question-list">
             {questions.map((question: any, index: number) => {
-              const status = getQuestionBadge(question.questionId, answers, markedQuestions, inProgressQuestions, index, currentQuestion);
-              const questionAnswer = answers[question.questionId] ?? {};
+              const questionKey = getQuestionKey(question, index);
+              const status = getQuestionBadge(questionKey, answers, markedQuestions, inProgressQuestions, index, currentQuestion);
+              const questionAnswer = answers[questionKey] ?? {};
               return (
                 <section
-                  key={question.questionId}
+                  key={questionKey}
                   ref={(element) => {
                     questionRefs.current[index] = element;
                   }}
@@ -257,19 +373,19 @@ export const ExamPage = () => {
                     </div>
                     <div className="question-meta">
                       <span>ניקוד מקסימלי: {question.maxScore}</span>
-                      <span>{question.type === 'MCQ' ? 'שאלה רב-ברירית' : 'שאלה פתוחה'}</span>
+                      <span>{question.typeId === 1 ? 'שאלה רב-ברירית' : 'שאלה פתוחה'}</span>
                     </div>
                   </div>
                   <h3>{question.text}</h3>
-                  {question.type === 'MCQ' ? (
+                  {question.typeId === 1 ? (
                     <div className="options-list">
                       {question.options.map((option: any) => (
-                        <label key={option.optionId} className="option-row">
+                        <label key={option.id} className="option-row">
                           <input
                             type="radio"
-                            name={`q-${question.questionId}`}
-                            checked={questionAnswer.selectedOptionId === option.optionId}
-                            onChange={() => void setAnswer(question.questionId, { selectedOptionId: option.optionId })}
+                            name={`q-${questionKey}`}
+                            checked={questionAnswer.selectedOptionId === option.id}
+                            onChange={() => void updateAnswer(questionKey, { selectedOptionId: option.id })}
                           />
                           <span>{option.text}</span>
                         </label>
@@ -279,7 +395,7 @@ export const ExamPage = () => {
                     <textarea
                       className="open-answer-input"
                       value={questionAnswer.answerText ?? ''}
-                      onChange={(event) => void setAnswer(question.questionId, { answerText: event.target.value })}
+                      onChange={(event) => void updateAnswer(questionKey, { answerText: event.target.value })}
                       placeholder="הקלידו תשובה מפורטת…"
                     />
                   )}
@@ -288,13 +404,13 @@ export const ExamPage = () => {
                       מעבר לשאלה
                     </button>
                     <div className="status-actions">
-                      <button className="ghost-button" onClick={() => toggleQuestionStatus(question.questionId, 'in-progress')}>
+                      <button className="ghost-button" onClick={() => toggleQuestionStatus(questionKey, 'in-progress')}>
                         בעבודה
                       </button>
-                      <button className="ghost-button" onClick={() => toggleQuestionStatus(question.questionId, 'review')}>
+                      <button className="ghost-button" onClick={() => toggleQuestionStatus(questionKey, 'review')}>
                         לבדיקה
                       </button>
-                      <button className="ghost-button" onClick={() => toggleQuestionStatus(question.questionId, 'none')}>
+                      <button className="ghost-button" onClick={() => toggleQuestionStatus(questionKey, 'none')}>
                         נקה סימון
                       </button>
                     </div>
@@ -320,9 +436,10 @@ export const ExamPage = () => {
               <h2>ניווט בין שאלות</h2>
               <div className="navigator-grid">
                 {questions.map((question: any, index: number) => {
-                  const status = getQuestionBadge(question.questionId, answers, markedQuestions, inProgressQuestions, index, currentQuestion);
+                  const questionKey = getQuestionKey(question, index);
+                  const status = getQuestionBadge(questionKey, answers, markedQuestions, inProgressQuestions, index, currentQuestion);
                   return (
-                    <button key={question.questionId} className={`nav-button status-${status.tone}`} onClick={() => jumpToQuestion(index)}>
+                    <button key={questionKey} className={`nav-button status-${status.tone}`} onClick={() => jumpToQuestion(index)}>
                       <span className="nav-question-label">שאלה {question.questionNumber}</span>
                       <span className="nav-status-label">{status.label}</span>
                     </button>

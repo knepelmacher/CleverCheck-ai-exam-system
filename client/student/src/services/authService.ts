@@ -29,7 +29,7 @@ export const authService = {
     return {
       studentId: Number(payload.student_id ?? 0),
       name: payload.student_name ?? 'סטודנט',
-      classId: 1,
+      classId: Number(payload.class_id ?? 0),
     };
   },
 

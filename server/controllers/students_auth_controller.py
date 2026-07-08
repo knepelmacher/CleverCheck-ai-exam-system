@@ -13,7 +13,7 @@ from server.models.student_exams import Base
 
 """
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 Base.metadata.create_all(engine)
 
@@ -73,11 +73,12 @@ def get_student_me():
     try:
         from server.services.jwt_service import get_student_data
         data = get_student_data()
-        print(data)
+
         return jsonify({
             'student_id': data['student_id'],
             'role': data['role'],
             'student_name': data.get('student_name', 'student'),
+            'class_id': data.get('class_id'),
         }), 200
     except Exception:
         return jsonify({'error': 'טוקן לא תקין'}), 401

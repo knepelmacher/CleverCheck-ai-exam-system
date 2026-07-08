@@ -27,5 +27,6 @@ def validate_student(db, student_name: str, password: str):
     return {
         "id": student.id,
         "role": "student",
-        "student_name": student.first_name
+        "student_name": student.first_name,
+        "class_id": student.class_id
     }

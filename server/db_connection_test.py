@@ -6,12 +6,8 @@ from sqlalchemy import text
 #from models.book import Base
 
 # ← החלף את הפרמטרים לפי הגדרות SQL Server בבית הספר
-# SERVER   = 'D403-003'                  # שם השרת
-SERVER   = '192.168.43.13'                  # שם השרת
-
-#DATABASE = 'GradexDB'       # ← שם ה-DB שייצרי
+SERVER   = 'D403-003'                  # שם השרת
 DATABASE = 'CleverCheckDB'       # ← שם ה-DB שייצרי
-
 DRIVER   = 'SQL Server'                 # Driver מהרשימה למטה
 
 # SERVER   = 'localhost'
@@ -52,7 +48,7 @@ def health_check() -> bool:
 # from sqlalchemy import create_engine, text
 #
 # engine = create_engine(
-#     "mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes"
+#     "mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes"
 # )
 #
 # try:

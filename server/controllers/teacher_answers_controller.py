@@ -10,7 +10,7 @@ from server.models.teacher_answer import Base
 # ⚠️ בפועל מומלץ להעביר את זה לקובץ אחד מרכזי (db.py)
 """
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 Base.metadata.create_all(engine)
 

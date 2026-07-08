@@ -1,21 +1,30 @@
 
+from server.services.main_service.my_stanza_service.correction_answer_scribens import scribens_service
+from server.services.main_service.my_stanza_service.stanza_and_Reverso_singleton import (nlp,synonym_client)
+from server.services.main_service.my_stanza_service.main_stanza_service import analyze_texts
 
-def get_student_score(student_text,teacher_text,answer_score):
-    import stanza
 
-    from server.services.main_service.my_stanza_service.Synonym_reverso import SynonymClient
-    from server.services.main_service.my_stanza_service.main_stanza_service import analyze_texts
+def get_student_score(student_text, teacher_text, answer_score):
 
-    nlp = stanza.Pipeline(
-        lang="he",
-        dir=r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\my_model\stanza-he\resources",
-        processors="tokenize,pos,lemma,depparse",
-        download_method=None,
-        verbose=False
+    cleaned_student_text = scribens_service.correct_text(student_text)
+
+    result = analyze_texts(
+        cleaned_student_text,
+        teacher_text,
+        answer_score,
+        nlp,
+        synonym_client
     )
-    synonym_client = SynonymClient()
-    result = analyze_texts(student_text, teacher_text, answer_score, nlp, synonym_client)
+
     return result["total_answer_score"]
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":

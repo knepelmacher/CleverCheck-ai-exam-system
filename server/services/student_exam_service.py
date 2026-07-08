@@ -142,10 +142,12 @@ class StudentExamService:
                             correct_answer = getattr(teacher, "answer_text", None)
 
                 # =========================
-                # ניקוד בטוח
+                # חישוב ניקוד סופי לשאלה
                 # =========================
-                score = getattr(answer, "score", 0) if is_correct and answer else 0
-                total_score += score or 0
+                if is_correct:
+                    score = getattr(question, "max_score", 0) or 0
+
+                total_score += score
 
                 result_questions.append({
                     "questionId": getattr(question, "id", None),
@@ -163,7 +165,51 @@ class StudentExamService:
 
         return {
             "examName": getattr(exam, "exam_name", None),
-            "subject": getattr(exam, "subject_id", None),
+            "subject": exam.subject.subject_name if exam.subject else None,
             "score": total_score,
+            "status": getattr(student_exam, "status", None),
             "questions": result_questions
         }
+
+    def save_answer(self, student_exam_id, question_id, answer_text, selected_option_id):
+        self.repo.save_answer(
+            student_exam_id,
+            question_id,
+            answer_text,
+            selected_option_id
+        )
+
+    def update_exam_grades(self, student_exam_id: int, grades_service=None):
+        # 1. שירות חיצוני — חישוב ציונים (MCQ + NLP לפתוחות)
+        if grades_service is not None:
+            exam = grades_service.update_exam_grades(student_exam_id)
+            if exam is None:
+                return None
+        else:
+            # fallback: משנה סטטוס בלבד בלי חישוב ציונים
+            exam = self.repo.get_by_id(student_exam_id)
+            if not exam:
+                return None
+
+        # 2. שינוי סטטוס ל-Submitted
+        exam = self.repo.update_exam_grades(student_exam_id)
+        if not exam:
+            return None
+
+        return {
+            "id": exam.id,
+            "status": exam.status,
+            "score": exam.score if hasattr(exam, 'score') else None,
+        }
+
+    def create_student_exam(self, student_id, exam_id, status='NotStarted'):
+        student_exam = StudentExam(
+            student_id=student_id,
+            exam_id=exam_id,
+            status=status
+        )
+
+        self.repo.session.add(student_exam)
+        self.repo.session.commit()
+
+        return student_exam

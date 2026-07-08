@@ -1,6 +1,6 @@
 from sentence_transformers import util, SentenceTransformer
 
-model = SentenceTransformer(r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\my_model")
+model = SentenceTransformer(r"C:\git\CleverCheck\server\my_model")
 def semantic_similarity(word1: str, word2: str, model):
     emb1 = model.encode(word1)
     emb2 = model.encode(word2)

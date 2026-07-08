@@ -63,10 +63,20 @@ export const ResultsPage = () => {
             <h1>{results?.examName ?? '-'}</h1>
             <p>{results?.subject ?? '-'}</p>
           </div>
-          <div className="score-pill">ציון: {results?.score ?? '-'}</div>
+          {results?.status === 'Submitted' ? (
+            <div className="score-pill">בבדיקה...</div>
+          ) : (
+            <div className="score-pill">ציון: {results?.score ?? '-'}</div>
+          )}
         </div>
 
-        {results?.questions.map((question, index) => {
+        {results?.status === 'Submitted' ? (
+          <div className="empty-state">
+            <p>המבחן נשלח לבדיקה. התוצאות יופיעו כאן מיד כשהבדיקה תסתיים.</p>
+            <button className="primary-button" onClick={() => window.location.reload()}>רענן</button>
+          </div>
+        ) : (
+          results?.questions.map((question, index) => {
           const statusClass = question.isCorrect ? 'correct' : question.score > 0 ? 'partial' : 'wrong';
           return (
             <article key={question.questionId} className={`result-card status-${statusClass}`}>
@@ -95,7 +105,8 @@ export const ResultsPage = () => {
               </div>
             </article>
           );
-        })}
+        })
+        )}
       </div>
     </div>
   );
