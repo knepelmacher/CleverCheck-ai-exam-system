@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from controllers.subject_controller import subject_blueprint
 from controllers.classes_controller import classes_blueprint
 from controllers.teachers_controller import teachers_blueprint
@@ -13,6 +13,7 @@ from controllers.teacher_answers_controller import teacher_answers_blueprint
 from controllers.student_client_controller import student_client_bp
 from flask_cors import CORS
 from config import Config
+from server.middleware.auth_middleware import token_required
 from server.controllers.students_auth_controller import auth_bp
 from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from server.controllers.exam_classes_controller import exam_classes_blueprint
@@ -35,6 +36,44 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
 app.config["SECRET_KEY"] = Config.SECRET_KEY
 #init_db(app)
+
+# Public routes that don't require authentication
+PUBLIC_ROUTES = [
+    '/api/auth/login',
+    '/api/auth/me',
+    '/api/auth',
+    '/api/auth_teacher/login',
+    '/api/auth_teacher/me',
+    '/api/auth_teacher',
+    '/api/student-client',
+]
+
+
+@app.before_request
+def require_auth():
+    # Allow OPTIONS (CORS preflight) without auth
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    # Allow public routes without auth
+    path = request.path.rstrip('/')
+    for public in PUBLIC_ROUTES:
+        if path.startswith(public):
+            return None
+
+    # Check for valid token
+    token = request.cookies.get("token")
+    if not token:
+        return jsonify({"error": "אין טוקן"}), 401
+
+    try:
+        import jwt as pyjwt
+        data = pyjwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
+        request.user = data
+    except Exception:
+        return jsonify({"error": "טוקן לא תקין"}), 401
+
+    return None
 
 # 1. טוען מודל
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))

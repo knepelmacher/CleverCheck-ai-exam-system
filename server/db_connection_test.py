@@ -6,8 +6,12 @@ from sqlalchemy import text
 #from models.book import Base
 
 # ← החלף את הפרמטרים לפי הגדרות SQL Server בבית הספר
-SERVER   = 'D403-003'                  # שם השרת
-DATABASE = 'GradexDB'       # ← שם ה-DB שייצרי
+# SERVER   = 'D403-003'                  # שם השרת
+SERVER   = '192.168.43.13'                  # שם השרת
+
+#DATABASE = 'GradexDB'       # ← שם ה-DB שייצרי
+DATABASE = 'CleverCheckDB'       # ← שם ה-DB שייצרי
+
 DRIVER   = 'SQL Server'                 # Driver מהרשימה למטה
 
 # SERVER   = 'localhost'
@@ -15,11 +19,20 @@ DRIVER   = 'SQL Server'                 # Driver מהרשימה למטה
 # DRIVER   = 'SQL Server'
 
 # יצירת connection string ל-SQL Server עם SQLAlchemy
+#engine = create_engine(
+ #   f'mssql+pyodbc://{SERVER}/{DATABASE}'
+  #  f'?driver={DRIVER.replace(" ", "+")}'
+   # f'&Trusted_Connection=yes'           # Windows auth, ללא סיסמה
+#)
 engine = create_engine(
-    f'mssql+pyodbc://{SERVER}/{DATABASE}'
+    f'mssql+pyodbc://gradex_user:Gradex123!@{SERVER}/{DATABASE}'
     f'?driver={DRIVER.replace(" ", "+")}'
-    f'&Trusted_Connection=yes'           # Windows auth, ללא סיסמה
+    f'&TrustServerCertificate=yes'
 )
+with engine.connect() as conn:
+    print(conn.execute(text(
+        "SELECT @@SERVERNAME, DB_NAME()"
+    )).fetchone())
 
 # יצירת הטבלאות אוטומטית אם לא קיימות
 #Base.metadata.create_all(engine)

@@ -85,6 +85,8 @@ class ExamService:
         return obj
 
     def update_exam(self, exam_id, dto):
+        session = self.repo.session
+
         obj = self.repo.update(
             exam_id,
             Exam(
@@ -101,6 +103,96 @@ class ExamService:
         if not obj:
             raise CleverCheckBaseError(exam_id)
 
+        for ec in list(obj.exam_classes or []):
+            session.delete(ec)
+
+        session.flush()
+
+        for class_id in dto.class_ids:
+            session.add(ExamClass(exam_id=exam_id, class_id=class_id))
+
+        existing_questions = list(obj.questions or [])
+
+        for idx, q_data in enumerate(dto.questions):
+            if idx < len(existing_questions):
+                question = existing_questions[idx]
+                question.question_number = idx + 1
+                question.question_text = q_data.get('text', '')
+                question.question_type_id = q_data.get('typeId', 1)
+                question.max_score = q_data.get('score', 10)
+                session.add(question)
+                session.flush()
+            else:
+                question = Question(
+                    exam_id=exam_id,
+                    question_number=idx + 1,
+                    question_text=q_data.get('text', ''),
+                    question_type_id=q_data.get('typeId', 1),
+                    max_score=q_data.get('score', 10),
+                )
+                session.add(question)
+                session.flush()
+
+            question_type = q_data.get('questionType', 'open')
+            options_list = q_data.get('options', [])
+            correct_answer = q_data.get('correctAnswer', '')
+
+            if question_type == 'american':
+                existing_options = list(getattr(question, 'options', []) or [])
+
+                for opt_idx, opt_text in enumerate(options_list):
+                    if opt_idx < len(existing_options):
+                        option = existing_options[opt_idx]
+                        option.option_number = opt_idx + 1
+                        option.option_text = opt_text
+                        session.add(option)
+                    else:
+                        option = Option(
+                            question_id=question.id,
+                            option_number=opt_idx + 1,
+                            option_text=opt_text,
+                        )
+                        session.add(option)
+                    session.flush()
+
+                if options_list:
+                    matching_option = None
+                    for option in list(getattr(question, 'options', []) or []):
+                        if option.option_text.strip() == correct_answer.strip():
+                            matching_option = option
+                            break
+
+                    teacher_answer = getattr(question, 'teacher_answer', None)
+                    if matching_option:
+                        if teacher_answer:
+                            teacher_answer.correct_option_id = matching_option.id
+                            teacher_answer.answer_text = None
+                            session.add(teacher_answer)
+                        else:
+                            session.add(TeacherAnswer(
+                                question_id=question.id,
+                                correct_option_id=matching_option.id,
+                                answer_text=None,
+                            ))
+                    elif teacher_answer and correct_answer:
+                        teacher_answer.correct_option_id = None
+                        teacher_answer.answer_text = correct_answer
+                        session.add(teacher_answer)
+            else:
+                teacher_answer = getattr(question, 'teacher_answer', None)
+                if correct_answer:
+                    if teacher_answer:
+                        teacher_answer.correct_option_id = None
+                        teacher_answer.answer_text = correct_answer
+                        session.add(teacher_answer)
+                    else:
+                        session.add(TeacherAnswer(
+                            question_id=question.id,
+                            correct_option_id=None,
+                            answer_text=correct_answer,
+                        ))
+
+        session.commit()
         return obj
 
     def delete_exam(self, exam_id):

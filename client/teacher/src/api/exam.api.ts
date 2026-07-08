@@ -2,17 +2,30 @@ import { httpClient } from './httpClient'
 import type { Exam } from '../models/Exam'
 import type { ExamDraft } from '../models/ExamDraft'
 
+export interface ExamStats {
+  totalExams: number
+  activeCount: number
+  draftCount: number
+  closedCount: number
+  averageScore: number
+}
+
 export async function getExams(): Promise<Exam[]> {
   const response = await httpClient.get<Exam[]>('/exams')
   return response.data
 }
 
+export async function getExamStats(): Promise<ExamStats> {
+  const response = await httpClient.get<ExamStats>('/exams/stats')
+  return response.data
+}
+
 export async function getExamById(id: number): Promise<Exam | null> {
-  const response = await httpClient.get<Exam>(`/exams/${id}`)
+  const response = await httpClient.get<Exam>(`/exams/teacher/${id}`)
   return response.data ?? null
 }
 
-export async function createExam(payload: ExamDraft): Promise<void> {
+function buildExamPayload(payload: ExamDraft) {
   const questionTypeMap: Record<string, number> = {
     american: 1,
     open: 2,
@@ -20,7 +33,7 @@ export async function createExam(payload: ExamDraft): Promise<void> {
     numeric: 4,
   }
 
-  await httpClient.post('/exams', {
+  return {
     name: payload.name,
     classIds: payload.classIds,
     startTime: payload.startTime || new Date().toISOString(),
@@ -36,5 +49,13 @@ export async function createExam(payload: ExamDraft): Promise<void> {
       options: q.options.filter((o) => o.trim() !== ''),
       correctAnswer: q.correctAnswer,
     })),
-  })
+  }
+}
+
+export async function createExam(payload: ExamDraft): Promise<void> {
+  await httpClient.post('/exams', buildExamPayload(payload))
+}
+
+export async function updateExam(id: number, payload: ExamDraft): Promise<void> {
+  await httpClient.put(`/exams/${id}`, buildExamPayload(payload))
 }

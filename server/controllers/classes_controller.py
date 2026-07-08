@@ -5,7 +5,10 @@ from server.repositories.class_repository import ClassRepository
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from server.models.classes import Base
+from server.db_connection import SessionLocal
 
+session = SessionLocal()
+"""
 engine = create_engine(
     'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
@@ -13,6 +16,7 @@ Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
+"""
 
 repo = ClassRepository(session)
 service = ClassService(repo)

@@ -12,21 +12,44 @@ logger = logging.getLogger(__name__)
 # ── הרכבת Connection String ──────────────────────────────────
 from urllib.parse import quote_plus
 
-_SERVER = os.getenv('DB_SERVER', r'localhost\SQLEXPRESS')
-_DATABASE = os.getenv('DB_NAME', 'GradexDB')
+#_SERVER = os.getenv('DB_SERVER', r'localhost\SQLEXPRESS')
+_SERVER = '192.168.43.13'
+
+#_DATABASE = os.getenv('DB_NAME', 'GradexDB')
+_DATABASE = 'CleverCheckDB'
+
 _DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
 
-params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};Trusted_Connection=yes")
+#params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};Trusted_Connection=yes")
+params = quote_plus(
+    f"DRIVER={_DRIVER};"
+    f"SERVER={_SERVER};"
+    f"DATABASE={_DATABASE};"
+    f"UID=gradex_user;"
+    f"PWD=Gradex123!"
+)
 
 DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={params}"
 # ── Engine ───────────────────────────────────────────────────
+#engine = create_engine(
+ #   DATABASE_URL,
+  #  echo=False,              # True → הדפסת SQL לדיבוג
+   # pool_pre_ping=True,      # בדיקת חיות חיבור לפני שימוש
+   # pool_size=5,
+    #max_overflow=10,
+#)
 engine = create_engine(
-    DATABASE_URL,
-    echo=False,              # True → הדפסת SQL לדיבוג
-    pool_pre_ping=True,      # בדיקת חיות חיבור לפני שימוש
-    pool_size=5,
-    max_overflow=10,
+    f'mssql+pyodbc://gradex_user:Gradex123!@{_SERVER}/{_DATABASE}'
+    f'?driver={_DRIVER.replace(" ", "+")}'
+    f'&TrustServerCertificate=yes'
 )
+from sqlalchemy import text
+
+with engine.connect() as conn:
+    result = conn.execute(text(
+        "SELECT @@SERVERNAME, DB_NAME()"
+    ))
+    print(result.fetchone())
 
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
@@ -59,6 +82,9 @@ def health_check() -> bool:
     except Exception as exc:
         logger.error(f"DB health check failed: {exc}")
         return False
+
+if __name__ == "__main__":
+    print(health_check())
 
 
 

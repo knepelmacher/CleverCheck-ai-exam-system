@@ -8,14 +8,18 @@ from server.repositories.teacher_answer_repository import TeacherAnswerRepositor
 from server.models.teacher_answer import Base
 
 # ⚠️ בפועל מומלץ להעביר את זה לקובץ אחד מרכזי (db.py)
+"""
 engine = create_engine(
     'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
-
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
+"""
+from server.db_connection import SessionLocal
+
+session = SessionLocal()
 
 repo = TeacherAnswerRepository(session)
 service = TeacherAnswerService(repo)

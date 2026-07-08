@@ -11,14 +11,18 @@ from sqlalchemy.orm import sessionmaker
 #from server.repositories.student_exam_repository import StudentExamRepository
 #from server.models.student_exams import Base
 
+"""
 engine = create_engine(
     'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
+Base.metadata.create_all(engine)
 
-# Base.metadata.create_all(engine)
-#
 Session = sessionmaker(bind=engine)
 session = Session()
+"""
+from server.db_connection import SessionLocal
+
+session = SessionLocal()
 #
 # repo = StudentExamRepository(session)
 # service = StudentExamService(repo)
