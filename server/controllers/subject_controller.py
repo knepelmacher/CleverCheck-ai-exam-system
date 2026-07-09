@@ -8,14 +8,18 @@ from server.repositories.subject_repository import SubjectRepository
 from server.models.subject import Base
 
 
+"""
 engine = create_engine(
     'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
-
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
+"""
+from server.db_connection import SessionLocal
+
+session = SessionLocal()
 
 repo = SubjectRepository(session)
 service = SubjectService(repo)

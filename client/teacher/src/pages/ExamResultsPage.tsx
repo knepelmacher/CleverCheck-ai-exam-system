@@ -37,7 +37,9 @@ export default function ExamResultsPage() {
           <TableBody>
             {(exam.student_exams ?? []).map((studentExam) => (
               <TableRow key={studentExam.id}>
-                <TableCell>{studentExam.student?.first_name ?? 'סטודנט'}</TableCell>
+                <TableCell>
+                  {studentExam.student ? `${studentExam.student.first_name} ${studentExam.student.last_name}` : `סטודנט ${studentExam.student_id}`}
+                </TableCell>
                 <TableCell>{studentExam.score ?? 0}</TableCell>
                 <TableCell>
                   <Chip label={studentExam.status ?? 'לא ניגש'} color={studentExam.status === 'passed' ? 'primary' : 'default'} />

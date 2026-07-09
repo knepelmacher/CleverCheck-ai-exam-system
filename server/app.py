@@ -19,7 +19,6 @@ from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from server.controllers.exam_classes_controller import exam_classes_blueprint
 #from server.controllers.teacher_classes_controller import teacher_classes_blueprint
 #from db_connection import init_db
-from services.grading_service import GradingService
 #from controllers.grading_controller import create_grading_blueprint
 import os
 from sentence_transformers import SentenceTransformer

@@ -20,6 +20,28 @@ export default function StudentExamDetailsPage() {
 
   const studentExam = exam.student_exams?.find((item) => item.student_id === Number(studentId))
 
+  const getStudentAnswerText = (questionId: number) => {
+    const answer = studentExam?.answers?.find((item) => item.question_id === questionId)
+    if (!answer) {
+      return 'לא נענתה'
+    }
+
+    if (answer.answer_text) {
+      return answer.answer_text
+    }
+
+    if (answer.selected_option_text) {
+      return answer.selected_option_text
+    }
+
+    return 'לא נענתה'
+  }
+
+  const getStudentAnswerScore = (questionId: number) => {
+    const answer = studentExam?.answers?.find((item) => item.question_id === questionId)
+    return answer?.score ?? 0
+  }
+
   return (
     <Stack spacing={3}>
       <Stack spacing={1}>
@@ -44,7 +66,12 @@ export default function StudentExamDetailsPage() {
               <ListItem key={question.id} divider>
                 <ListItemText
                   primary={question.question_text}
-                  secondary={`ניקוד מקסימלי: ${question.max_score}`}
+                  secondary={
+                    <Stack spacing={0.5}>
+                      <Typography variant="body2">תשובה של הסטודנט: {getStudentAnswerText(question.id)}</Typography>
+                      <Typography variant="body2">ניקוד שניתן: {getStudentAnswerScore(question.id)} / {question.max_score}</Typography>
+                    </Stack>
+                  }
                 />
               </ListItem>
             ))}

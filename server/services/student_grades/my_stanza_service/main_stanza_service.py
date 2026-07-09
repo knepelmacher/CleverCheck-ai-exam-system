@@ -5,7 +5,7 @@ from server.services.main_service.my_stanza_service.concept_match import match_c
 from server.services.main_service.my_stanza_service.concept_to_struct import concept_to_struct
 from server.services.main_service.my_stanza_service.teacher_concepts3 import analyze_concepts
 
-model = SentenceTransformer(r"C:\git\CleverCheck\server\my_model")
+model = SentenceTransformer(r"/server/my_model")
 
 
 

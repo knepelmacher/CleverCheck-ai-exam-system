@@ -1,4 +1,3 @@
-import pytest
 from server.services.text_processing_service import clean_text
 
 # נניח שהפונקציה שלך נקראת clean_text ומיובאת

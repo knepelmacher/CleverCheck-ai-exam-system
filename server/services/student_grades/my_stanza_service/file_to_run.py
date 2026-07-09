@@ -1,5 +1,11 @@
+<<<<<<< HEAD:server/services/main_service/my_stanza_service/file_to_run.py
 from server.services.main_service.singleton_service.stanza_singleton import (nlp)
 from server.services.main_service.singleton_service.Reverso_singelton import (synonym_client)
+=======
+
+from server.services.main_service.my_stanza_service.correction_answer_scribens import scribens_service
+from server.services.main_service.my_stanza_service.stanza_and_Reverso_singleton import (nlp,synonym_client)
+>>>>>>> 6f4f6bc13fdb18d787609dd7a024b71d5ceb054c:server/services/student_grades/my_stanza_service/file_to_run.py
 from server.services.main_service.my_stanza_service.main_stanza_service import analyze_texts
 
 

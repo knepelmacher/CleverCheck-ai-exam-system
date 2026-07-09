@@ -3,7 +3,13 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   AppBar,
   Box,
+  Button,
   CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Drawer,
   IconButton,
@@ -28,6 +34,7 @@ const navigationItems = [
 
 export default function TeacherLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -42,9 +49,12 @@ export default function TeacherLayout() {
 
   const handleDrawerToggle = () => setMobileOpen((value) => !value)
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => setLogoutOpen(true)
+
+  const handleLogoutConfirm = async () => {
+    setLogoutOpen(false)
     await signOut()
-    navigate('/login')
+    navigate('/')
   }
 
   const drawer = (
@@ -65,7 +75,7 @@ export default function TeacherLayout() {
       </List>
       <Divider />
       <List>
-        <ListItemButton onClick={handleLogout}>
+        <ListItemButton onClick={handleLogoutClick}>
           <ListItemIcon><LogoutIcon /></ListItemIcon>
           <ListItemText primary="התנתקות" />
         </ListItemButton>
@@ -111,6 +121,21 @@ export default function TeacherLayout() {
         <Toolbar />
         <Outlet />
       </Box>
+
+      <Dialog open={logoutOpen} onClose={() => setLogoutOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>התנתקות מהמערכת</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            פעולה זו תנתק אותך לחלוטין מהמערכת. יהיה עליך להתחבר מחדש כדי לגשת לחשבונך.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setLogoutOpen(false)} color="inherit">ביטול</Button>
+          <Button variant="contained" color="error" onClick={handleLogoutConfirm}>
+            התנתק
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
