@@ -22,7 +22,7 @@ def extract_lemmas(text, nlp):
 
 nlp = stanza.Pipeline(
     lang="he",
-    dir=r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\my_model\stanza-he\resources",
+    dir=r"/server/my_model/stanza-he/resources",
     processors="tokenize,pos,lemma,depparse",
     download_method=None,
     verbose=False

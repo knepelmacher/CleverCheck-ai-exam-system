@@ -33,7 +33,7 @@ def extract_teacher_keywords(teacher_answer: str, kw_model: KeyBERT, threshold: 
 # ──────────────────────────────
 if __name__ == "__main__":
     model = SentenceTransformer(
-        r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\my_model"
+        r"/server/my_model"
     )
     kw_model = KeyBERT(model=model)
 

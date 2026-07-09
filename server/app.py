@@ -10,10 +10,7 @@ from controllers.questions_controller import questions_blueprint
 from controllers.student_answers_controller import student_answers_blueprint
 from controllers.student_exams_controller import student_exams_blueprint
 from controllers.teacher_answers_controller import teacher_answers_blueprint
-from controllers.student_client_controller import student_client_bp
-from flask_cors import CORS
 from config import Config
-from server.middleware.auth_middleware import token_required
 from server.controllers.students_auth_controller import auth_bp
 from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from server.controllers.exam_classes_controller import exam_classes_blueprint
@@ -21,8 +18,6 @@ from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from db_connection import init_db
 from services.grading_service import GradingService
 #from controllers.grading_controller import create_grading_blueprint
-import os
-from sentence_transformers import SentenceTransformer
 from db_connection_test import health_check
 from flask_cors import CORS
 from server.jobs.exams_jobs import start_exam_jobs

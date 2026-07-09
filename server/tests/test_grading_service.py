@@ -24,7 +24,7 @@ sys.modules['sentence_transformers.util'] = st_stub.util
 
 # עכשיו בטוח לייבא
 from server.dtos.dtos import GradeRequestDTO, ConceptEvaluationDTO
-from server.exceptions.exceptions import ValidationError, GradingError, ModelNotFoundError
+from server.exceptions.exceptions import ValidationError, ModelNotFoundError
 
 
 # ══════════════════════════════════════════════════════════════
@@ -91,7 +91,6 @@ class TestGradingService:
 
     def _make_service(self, sim_scores: list[float]):
         """בונה GradingService עם מודל מדומה שמחזיר ציוני דמיון מוגדרים."""
-        import torch as _torch
 
         repo = MagicMock()
         saved_mock = MagicMock()
@@ -102,7 +101,6 @@ class TestGradingService:
         with patch('services.grading_service.get_model') as mock_get_model, \
              patch('services.grading_service.util') as mock_util:
 
-            import torch
             # mock: cos_sim מחזיר מטריצה שורה-אחת לכל מושג
             mock_tensor = MagicMock()
             mock_tensor.max.return_value = (
