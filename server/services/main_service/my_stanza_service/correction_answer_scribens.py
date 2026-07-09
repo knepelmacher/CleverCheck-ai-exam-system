@@ -57,4 +57,3 @@ class ScribensService:
             return text
 
 
-scribens_service = ScribensService()

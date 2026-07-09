@@ -6,8 +6,10 @@ const VALID_EXAM_STATUSES: readonly ExamStatus[] = ['Active', 'Draft', 'Closed']
 
 const validateExamStatus = (status: string): ExamStatus => {
   const trimmed = String(status ?? '').trim();
-  if ((VALID_EXAM_STATUSES as readonly string[]).includes(trimmed)) {
-    return trimmed as ExamStatus;
+  // normalize case — server might return "draft" instead of "Draft"
+  const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+  if ((VALID_EXAM_STATUSES as readonly string[]).includes(capitalized)) {
+    return capitalized as ExamStatus;
   }
   return 'Closed';
 };

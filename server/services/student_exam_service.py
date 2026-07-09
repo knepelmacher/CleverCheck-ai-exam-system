@@ -213,3 +213,6 @@ class StudentExamService:
         self.repo.session.commit()
 
         return student_exam
+
+    def get_student_exam(self, student_id, exam_id):
+        return self.repo.get_student_exam(student_id, exam_id)

@@ -12,7 +12,7 @@ from server.repositories.student_exam_repository import StudentExamRepository
 from server.repositories.student_answer_repository import StudentAnswerRepository
 from server.repositories.question_repository import QuestionRepository
 from server.repositories.teacher_answer_repository import TeacherAnswerRepository
-from server.models.student_exams import Base, StudentExam
+from server.models.student_exams import Base
 from server.models import StudentExam
 from server.db_connection import SessionLocal
 
@@ -67,7 +67,8 @@ def submit_student_exam(student_exam_id: int) -> bool:
 
         return True
 
-    except Exception:
+    except Exception as e:
+        print("submit_student_exam error:", e)
         session.rollback()
         raise
 

@@ -1,14 +1,12 @@
-from server.services.main_service.my_stanza_service.correction_answer_scribens import scribens_service
-from server.services.main_service.my_stanza_service.stanza_and_Reverso_singleton import (nlp,synonym_client)
+from server.services.main_service.singleton_service.stanza_singleton import (nlp)
+from server.services.main_service.singleton_service.Reverso_singelton import (synonym_client)
 from server.services.main_service.my_stanza_service.main_stanza_service import analyze_texts
 
 
-def get_student_score(student_text, teacher_text, answer_score):
-
-    cleaned_student_text = scribens_service.correct_text(student_text)
+def check_with_stanza(student_text, teacher_text, answer_score):
 
     result = analyze_texts(
-        cleaned_student_text,
+        student_text,
         teacher_text,
         answer_score,
         nlp,

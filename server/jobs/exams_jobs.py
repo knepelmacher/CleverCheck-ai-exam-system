@@ -8,6 +8,8 @@ from server.db_connection import SessionLocal
 SERVER_START_TIME = datetime.utcnow()
 
 def run_exam_jobs():
+    print("Starting exam jobs...")
+    """"
     while True:
         session = SessionLocal()
         now = datetime.utcnow()
@@ -74,7 +76,7 @@ def run_exam_jobs():
             session.close()
 
         time.sleep(30)
-
+"""
 
 def start_exam_jobs():
     thread = threading.Thread(target=run_exam_jobs, daemon=True)

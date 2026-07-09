@@ -1,4 +1,4 @@
-# db_connection.py
+"""# db_connection.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
@@ -47,4 +47,4 @@ def health_check() -> bool:
 #         conn.execute(text("SELECT 1"))
 #     print("DB connected ✅")
 # except Exception as e:
-#     print("DB connection failed ❌", e)
+#     print("DB connection failed ❌", e)"""

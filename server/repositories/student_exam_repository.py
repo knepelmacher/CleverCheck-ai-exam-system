@@ -76,3 +76,9 @@ class StudentExamRepository:
             self.session.rollback()
             print(e)
             return None
+
+    def get_student_exam(self, student_id, exam_id):
+        return self.session.query(StudentExam).filter_by(
+            student_id=student_id,
+            exam_id=exam_id
+        ).first()

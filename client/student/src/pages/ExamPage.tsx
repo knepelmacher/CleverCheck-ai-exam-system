@@ -165,7 +165,7 @@ const handleSubmit = async () => {
         createdAt: new Date().toISOString(),
       })
     );
-
+F
     setExamExpired(true);
 
   } finally {
@@ -264,9 +264,6 @@ const handleSubmit = async () => {
     return <div className="page-loading">הזמן למבחן זה הסתיים. לא ניתן להמשיך לענות.</div>;
   }
 
-  if (!currentQuestionData) {
-    return <div className="page-loading">המבחן לא נמצא.</div>;
-  }
 
   const updateAnswer = (questionId: number, value: AnswerValue) => {
   if (examExpired) return;

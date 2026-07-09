@@ -70,12 +70,16 @@ def get_student_me():
         from server.services.jwt_service import get_student_data
         data = get_student_data()
 
+        if not data:
+            return jsonify({'error': 'טוקן לא תקין'}), 401
+
         return jsonify({
-            'student_id': data['student_id'],
-            'role': data['role'],
+            'student_id': data.get('student_id'),
+            'role': data.get('role'),
             'student_name': data.get('student_name', 'student'),
             'class_id': data.get('class_id'),
         }), 200
-    except Exception:
+    except Exception as e:
+        print(f"[ME ERROR] {e}")
         return jsonify({'error': 'טוקן לא תקין'}), 401
 

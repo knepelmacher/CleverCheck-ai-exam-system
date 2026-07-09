@@ -1,4 +1,4 @@
-from server.services.main_service.my_stanza_service.file_to_run import get_student_score
+from server.services.main_service.stanza_and_model.check_answer_main import get_student_score
 
 
 class UpdateGradesService:
@@ -67,6 +67,7 @@ class UpdateGradesService:
 
                 if student_text and teacher_text:
                     score = get_student_score(
+                        question.question_text,
                         student_text,
                         teacher_text,
                         question.max_score,

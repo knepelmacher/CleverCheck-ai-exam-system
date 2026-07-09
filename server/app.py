@@ -13,6 +13,7 @@ from controllers.teacher_answers_controller import teacher_answers_blueprint
 from controllers.student_client_controller import student_client_bp
 from flask_cors import CORS
 from config import Config
+from server import config
 from server.controllers.students_auth_controller import auth_bp
 from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from server.controllers.exam_classes_controller import exam_classes_blueprint
@@ -22,7 +23,7 @@ from services.grading_service import GradingService
 #from controllers.grading_controller import create_grading_blueprint
 import os
 from sentence_transformers import SentenceTransformer
-from db_connection_test import health_check
+from db_connection import health_check
 from flask_cors import CORS
 from server.jobs.exams_jobs import start_exam_jobs
 
@@ -32,7 +33,7 @@ else:
     print("DB connection failed ❌")
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
+CORS(app, supports_credentials=True, origins=[Config.CLIENT_PATH])
 app.config["SECRET_KEY"] = Config.SECRET_KEY
 #init_db(app)
 
