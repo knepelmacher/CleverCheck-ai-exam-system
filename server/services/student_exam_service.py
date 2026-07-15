@@ -17,7 +17,7 @@ class StudentExamService:
 
         return self.repo.add(entity)
 
-    def get_all_studentexams(self):
+    def get_all_student_exams(self):
         return self.repo.get_all()
 
     def get_full_exam(self, student_id: int, exam_id: int):
@@ -216,3 +216,33 @@ class StudentExamService:
 
     def get_student_exam(self, student_id, exam_id):
         return self.repo.get_student_exam(student_id, exam_id)
+
+    def get_scores_distribution(self, exam_id: int):
+        """Return score distribution for an exam as 10 bins (0-9, 10-19, ..., 90-100)."""
+        scores = self.repo.get_scores_by_exam(exam_id)
+        print("SCORES:", scores)
+        total = len(scores)
+        avg = round(sum(scores) / total, 1) if total > 0 else 0
+
+        bins = []
+
+        for i in range(10):
+            lo = i * 10
+            hi = (i + 1) * 10 if i < 9 else 100
+
+            count = sum(1 for s in scores if lo <= s < hi)
+
+            bins.append({
+                "min": lo,
+                "max": hi,
+                "count": count,
+                "label": f"{lo}–{hi}",
+            })
+
+        return {
+            "bins": bins,
+            "totalStudents": total,
+            "average": avg,
+        }
+
+# services/exam_service.py

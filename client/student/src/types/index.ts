@@ -1,7 +1,8 @@
 export type ExamStatus =
   | 'Active'
   | 'Draft'
-  | 'Closed';
+  | 'Closed'
+  | 'InProgress';
 export type QuestionType = 'MCQ' | 'TEXT';
 export type QuestionMarkStatus = 'none' | 'in-progress' | 'review';
 export type StudentExamStatus =
@@ -58,6 +59,8 @@ export interface ExamInitialPayload {
   studentExam: {
     studentExamId: number;
     status: StudentExamStatus;
+    startTime: string | null;
+    endTime: string | null;
   };
   questions: QuestionModel[];
   answers: Array<{
@@ -84,4 +87,17 @@ export interface ResultsPayload {
   score: number;
   status: string;
   questions: ResultQuestion[];
+}
+
+export interface ScoreBin {
+  min: number;
+  max: number;
+  count: number;
+  label: string;
+}
+
+export interface ScoresDistribution {
+  bins: ScoreBin[];
+  totalStudents: number;
+  average: number;
 }

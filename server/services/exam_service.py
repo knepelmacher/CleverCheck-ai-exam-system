@@ -94,7 +94,10 @@ class ExamService:
         result = []
 
         for exam in exams:
-            student_exam = exam.student_exams[0] if exam.student_exams else None
+            student_exam = next(
+                (se for se in exam.student_exams if se.student_id == student_id),
+                None
+            )
 
             # ברירת מחדל לפי זמן (DB)
             if now < exam.start_time:
@@ -112,9 +115,10 @@ class ExamService:
                 student_exam_status = se_status
 
                 if se_status == 'InProgress':
-                    computed_status = 'InProgress'
+                    computed_status = 'Active'
 
                 elif se_status in ['Submitted', 'Checked']:
+                    print("Student exam status: ", student_exam_status)
                     computed_status = 'Closed'
 
                 elif se_status == 'NotStarted':
@@ -126,6 +130,9 @@ class ExamService:
                     else:
                         computed_status = 'Closed'
 
+            print("EXAM:", exam.id)
+            print("STUDENT EXAMS:", exam.student_exams)
+            print("STUDENT STATUS:", student_exam_status)
             result.append({
                 'exam': exam,
                 'computedStatus': computed_status,

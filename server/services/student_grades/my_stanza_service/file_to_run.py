@@ -1,16 +1,13 @@
-<<<<<<< HEAD:server/services/main_service/my_stanza_service/file_to_run.py
-from server.services.main_service.singleton_service.stanza_singleton import (nlp)
-from server.services.main_service.singleton_service.Reverso_singelton import (synonym_client)
-=======
-
-from server.services.main_service.my_stanza_service.correction_answer_scribens import scribens_service
-from server.services.main_service.my_stanza_service.stanza_and_Reverso_singleton import (nlp,synonym_client)
->>>>>>> 6f4f6bc13fdb18d787609dd7a024b71d5ceb054c:server/services/student_grades/my_stanza_service/file_to_run.py
-from server.services.main_service.my_stanza_service.main_stanza_service import analyze_texts
+from server.services.student_grades.singleton_service.stanza_singleton import (nlp)
+from server.services.student_grades.singleton_service.Reverso_singelton import (synonym_client)
+from server.services.student_grades.my_stanza_service.main_stanza_service import analyze_texts
+from server.services.student_grades.stanza_and_model.check_answer_main import get_student_score
 
 
 def check_with_stanza(student_text, teacher_text, answer_score):
-
+    print(student_text)
+    print(teacher_text)
+    print(answer_score)
     result = analyze_texts(
         student_text,
         teacher_text,
@@ -18,20 +15,14 @@ def check_with_stanza(student_text, teacher_text, answer_score):
         nlp,
         synonym_client
     )
-
+    print("result_stanza")
+    print(result["total_answer_score"])
     return result["total_answer_score"]
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
     students = [
+        "כמה פעמים מחברים את אותו מספר",
         "מערכת ההפעלה אחראית על ניהול משאבי החומרה, הקצאת זיכרון, תזמון תהליכים ותקשורת בין התוכנות לרכיבי החומרה.",
         "מערכת ההפעלה מנהלת את החומרה, מקצה זיכרון ומבצעת תזמון תהליכים.",
         "מערכת ההפעלה מקצה זיכרון ליישומים ומנהלת תהליכים.",
@@ -43,10 +34,10 @@ if __name__ == "__main__":
         "מערכת הפעלה מריצה קודים",
         "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
     ]
-
-    teacher_text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    teacher_text = "כמה פעמים מחברים אותו מספר"
+  #  teacher_text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
     for student_text in students:
-        result = get_student_score(student_text, teacher_text,100)
+        result = check_with_stanza(student_text, teacher_text,20)
         print(result["student_text"])
         print(result["total_answer_score"])
         print("matches_pos",result["matches_pos"])

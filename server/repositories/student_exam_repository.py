@@ -82,3 +82,24 @@ class StudentExamRepository:
             student_id=student_id,
             exam_id=exam_id
         ).first()
+
+    def get_scores_by_exam(self, exam_id: int) -> list[float]:
+        """Return scores of all checked/submitted StudentExams for a given exam,
+        limited to students whose class is assigned to the exam."""
+        from server.models.student import Student
+        from server.models.exam_class import ExamClass
+
+        rows = (
+            self.session.query(StudentExam.score)
+            .join(Student, StudentExam.student_id == Student.id)
+            .join(ExamClass, Student.class_id == ExamClass.class_id)
+            .filter(
+                StudentExam.exam_id == exam_id,
+                ExamClass.exam_id == exam_id,
+                StudentExam.score.isnot(None),
+                StudentExam.status.in_(["Submitted", "Checked"]),
+            )
+            .all()
+        )
+        return [row.score for row in rows if row.score is not None]
+

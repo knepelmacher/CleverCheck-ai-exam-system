@@ -39,3 +39,4 @@ export const ExamCard = ({ exam }: Props) => {
     </article>
   );
 };
+

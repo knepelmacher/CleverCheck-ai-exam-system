@@ -1,4 +1,4 @@
-from server.services.main_service.my_stanza_service.semantic_similarity import semantic_similarity
+from server.services.student_grades.my_stanza_service.semantic_similarity import semantic_similarity
 
 
 def match_concepts(teacher_concepts, student_concepts, student_text, model,synonym_client, nlp):

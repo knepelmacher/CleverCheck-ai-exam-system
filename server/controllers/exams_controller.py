@@ -9,7 +9,7 @@ from server.repositories.exam_repository import ExamRepository
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from server.models.exams import Base
-from server.services.jwt_service import get_student_data
+from server.services.jwt_student_service import get_student_data
 from server.services.jwt_teacher_service import get_teacher_data
 """
 engine = create_engine(
@@ -50,6 +50,10 @@ def add_exam():
     if not teacher_id:
         return jsonify({"error": "Unauthorized"}), 401
 
+    status_raw = data.get('status', 'Draft')
+    # Normalize to title case for consistency with DB default and job queries
+    status = status_raw.strip().capitalize() if status_raw else 'Draft'
+
     dto = ExamDTO(
         exam_name=data.get('name', ''),
         teacher_id=teacher_id,
@@ -57,7 +61,7 @@ def add_exam():
         start_time=_parse_datetime(data.get('startTime')),
         end_time=_parse_datetime(data.get('endTime')),
         duration_minutes=data.get('duration_minutes', 60),
-        status=data.get('status', 'draft'),
+        status=status,
         class_ids=data.get('classIds', []),
         questions=data.get('questions', []),
     )
@@ -108,9 +112,9 @@ def get_exam_stats():
         all_exams = [e for e in all_exams if e.teacher_id == teacher_id]
 
     total = len(all_exams)
-    active = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'active')
-    draft = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'draft')
-    closed = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'closed')
+    active = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'Active')
+    draft = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'Draft')
+    closed = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'Closed')
 
     # Calculate average score across all student exams for these exams
     all_scores = []
@@ -278,7 +282,7 @@ def update_exam(exam_id):
         start_time=_parse_datetime(data.get('startTime')) or existing.start_time,
         end_time=_parse_datetime(data.get('endTime')) or existing.end_time,
         duration_minutes=data.get('duration_minutes', existing.duration_minutes),
-        status=data.get('status', existing.status),
+        status=(data.get('status') or existing.status).strip().capitalize(),
         class_ids=data.get('classIds', []),
         questions=data.get('questions', []),
     )

@@ -1,8 +1,8 @@
-import type { ExamCardModel, ExamInitialPayload, ExamStatus, ResultsPayload } from '../types';
+import type { ExamCardModel, ExamInitialPayload, ExamStatus, ResultsPayload, ScoresDistribution } from '../types';
 
 const API_BASE = 'http://localhost:5000/api';
 
-const VALID_EXAM_STATUSES: readonly ExamStatus[] = ['Active', 'Draft', 'Closed'] as const;
+const VALID_EXAM_STATUSES: readonly ExamStatus[] = ['Active', 'Draft', 'Closed', 'InProgress'] as const;
 
 const validateExamStatus = (status: string): ExamStatus => {
   const trimmed = String(status ?? '').trim();
@@ -37,7 +37,7 @@ const parseJson = async (response: Response) => {
 
 export const examService = {
   listExams: async (): Promise<ExamCardModel[]> => {
-    const payload = await parseJson(await fetch(`${API_BASE}/exams`, { credentials: 'include' }));
+    const payload = await parseJson(await fetch(`${API_BASE}/student_exams`, { credentials: 'include' }));
     console.log("EXAMS FROM SERVER:", payload);
     return (payload as RawExamItem[]).map((exam) => ({
       examId: exam.id,
@@ -77,5 +77,10 @@ export const examService = {
     const response = await fetch(`${API_BASE}/student_exams/exam/${examId}/results`, { credentials: 'include' });
     const payload = await parseJson(response);
     return payload as ResultsPayload;
+  },
+  getScoresDistribution: async (examId: string): Promise<ScoresDistribution> => {
+    const response = await fetch(`${API_BASE}/student_exams/exam/${examId}/scores-distribution`, { credentials: 'include' });
+    const payload = await parseJson(response);
+    return payload as ScoresDistribution;
   },
 };

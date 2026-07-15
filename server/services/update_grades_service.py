@@ -1,4 +1,4 @@
-from server.services.main_service.stanza_and_model.check_answer_main import get_student_score
+from server.services.student_grades.stanza_and_model.check_answer_main import get_student_score
 
 
 class UpdateGradesService:
@@ -58,22 +58,22 @@ class UpdateGradesService:
 
             # ── שאלה פתוחה (TEXT) ──
             else:
-                student_text = answer.answer_text or ""
-                teacher_text = (
-                    teacher_answer.answer_text
-                    if teacher_answer and teacher_answer.answer_text
-                    else ""
-                )
-
-                if student_text and teacher_text:
-                    score = get_student_score(
-                        question.question_text,
-                        student_text,
-                        teacher_text,
-                        question.max_score,
+                    student_text = answer.answer_text or ""
+                    teacher_text = (
+                        teacher_answer.answer_text
+                        if teacher_answer and teacher_answer.answer_text
+                        else ""
                     )
-                else:
-                    score = 0
+
+                    if student_text and teacher_text:
+                            score = get_student_score(
+                                question.question_text,
+                                student_text,
+                                teacher_text,
+                                question.max_score,
+                            )
+                    else:
+                        score = 0
 
             answer.score = score
             total_score += score

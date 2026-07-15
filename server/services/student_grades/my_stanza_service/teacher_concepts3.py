@@ -1,6 +1,6 @@
 import stanza
 
-from server.services.main_service.my_stanza_service.check_nagative_in_answer import extract_syntactic_negation
+from server.services.student_grades.my_stanza_service.check_nagative_in_answer import extract_syntactic_negation
 
 
 def mark_negation(concepts, neg_tokens):
@@ -82,7 +82,7 @@ def build_concepts(sent):
     for w in sent.words:
         children.setdefault(w.head, []).append(w)
 
-    DEPREL_WEIGHTS = {"nsubj": 30, "obj": 25, "obl": 15, "compound": 5, "amod": 3}
+    DEPREL_WEIGHTS = {"root": 40, "nsubj": 30, "obj": 25, "obl": 15, "compound": 5, "amod": 3}
 
     def collect(node):
         tokens = [node]

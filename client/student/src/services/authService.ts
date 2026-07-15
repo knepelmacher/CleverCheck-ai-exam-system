@@ -45,12 +45,23 @@ export const authService = {
     });
 
     const result = await parseJson(response);
-    
+
     // Check for authentication failure
     if (result === 'NONE' || result?.error === 'NONE') {
       throw new Error('Invalid username or password');
     }
-    
+
     return { success: true };
+  },
+
+  logout: async (): Promise<void> => {
+    const response = await fetch(`${API_BASE}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Logout failed');
+    }
   },
 };

@@ -2,8 +2,8 @@ from urllib import request
 
 from fontTools.config import OPTIONS
 
-from server.services.auth_service import validate_student
-from server.services.jwt_service import create_token
+from server.services.auth_student_service import validate_student
+from server.services.jwt_student_service import create_token
 from flask import Blueprint, request, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -68,10 +68,20 @@ def login():
         except Exception as e:
             print("LOGIN ERROR:", e)
             return jsonify({"error": str(e)}), 500
+
+
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    from flask import make_response
+    resp = make_response(jsonify({"success": True, "message": "התנתקת בהצלחה"}))
+    resp.set_cookie('token', '', max_age=0, path='/', httponly=True, samesite='Lax')
+    return resp
+
+
 @auth_bp.route('/me', methods=['GET'])
 def get_student_me():
     try:
-        from server.services.jwt_service import get_student_data
+        from server.services.jwt_student_service import get_student_data
         data = get_student_data()
 
         if not data:

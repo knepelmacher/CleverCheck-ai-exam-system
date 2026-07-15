@@ -36,13 +36,13 @@ export const useAutoSaveExam = ({ studentExamId, getAnswers, enabled }: Params) 
         queueRef.current.delete(questionId);
       }
 
-      localStorage.removeItem('serverOffline');
+      localStorage.removeItem(`exam_${studentExamId}_serverOffline`);
 
     } catch (error) {
       console.error('Auto save failed', error);
 
       localStorage.setItem(
-        'serverOffline',
+        `exam_${studentExamId}_serverOffline`,
         JSON.stringify({
           value: true,
           time: new Date().toISOString(),

@@ -1,5 +1,5 @@
 import torch
-from server.services.main_service.singleton_service.dictabert_singleton import model, tokenizer
+from server.services.student_grades.singleton_service.dictabert_singleton import model, tokenizer
 # מצב חיזוי
 model.eval()
 
