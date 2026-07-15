@@ -9,11 +9,11 @@ from server.repositories.exam_repository import ExamRepository
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from server.models.exams import Base
-from server.services.jwt_service import get_student_data
+from server.services.jwt_student_service import get_student_data
 from server.services.jwt_teacher_service import get_teacher_data
 """
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 Base.metadata.create_all(engine)
 
@@ -50,6 +50,10 @@ def add_exam():
     if not teacher_id:
         return jsonify({"error": "Unauthorized"}), 401
 
+    status_raw = data.get('status', 'Draft')
+    # Normalize to title case for consistency with DB default and job queries
+    status = status_raw.strip().capitalize() if status_raw else 'Draft'
+
     dto = ExamDTO(
         exam_name=data.get('name', ''),
         teacher_id=teacher_id,
@@ -57,7 +61,7 @@ def add_exam():
         start_time=_parse_datetime(data.get('startTime')),
         end_time=_parse_datetime(data.get('endTime')),
         duration_minutes=data.get('duration_minutes', 60),
-        status=data.get('status', 'draft'),
+        status=status,
         class_ids=data.get('classIds', []),
         questions=data.get('questions', []),
     )
@@ -108,9 +112,9 @@ def get_exam_stats():
         all_exams = [e for e in all_exams if e.teacher_id == teacher_id]
 
     total = len(all_exams)
-    active = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'active')
-    draft = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'draft')
-    closed = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'closed')
+    active = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'Active')
+    draft = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'Draft')
+    closed = sum(1 for e in all_exams if (e.status or '').strip().lower() == 'Closed')
 
     # Calculate average score across all student exams for these exams
     all_scores = []
@@ -218,35 +222,51 @@ def get_teacher_exam(exam_id):
 @exams_blueprint.route('/<int:exam_id>', methods=['GET'])
 def get_student_exam(exam_id):
     student_id = get_student_data().get('student_id')
+    """רשימת מבחנים עבור הסטודנט המחובר, כולל computedStatus."""
+    student_data = get_student_data()
+    if not student_data:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    student_id = student_data.get('student_id')
+    class_id = student_data.get('class_id')
 
     if not student_id:
         return jsonify({"error": "Unauthorized"}), 401
 
+    data = service.get_exams_with_status(student_id, class_id)
+
+    return jsonify([
+        {
+            'id': item['exam'].id,
+            'examName': item['exam'].exam_name,
+            'teacherID': item['exam'].teacher_id,
+            'subject': item['exam'].subject.subject_name if item['exam'].subject else None,
+            'startTime': item['exam'].start_time,
+            'endTime': item['exam'].end_time,
+            'durationMinutes': item['exam'].duration_minutes,
+            'status': item['exam'].status,
+            'computedStatus': item['computedStatus'],
+            'studentExamStatus': item['studentExamStatus'],
+        }
+        for item in data
+    ])
+
+
+@exams_blueprint.route('/<int:exam_id>', methods=['GET'])
+def get_exam_by_id(exam_id):
+    """שליפת מבחן בודד (ללא StudentExam — השימוש עובר דרך student_exams_controller)."""
     exam = service.get_exam_by_id(exam_id)
-    questions = service.get_questions(exam_id)
-
-    student_exam = service.get_or_create_student_exam(student_id, exam_id)
-
-    answers = service.get_answers(student_exam.id)
-
     return jsonify({
-        "exam": {
-            "id": exam.id,
-            "examName": exam.exam_name,
-            "subjectID": exam.subject_id,
-            "status": exam.status,
-            "durationMinutes": exam.duration_minutes,
-            "startTime": exam.start_time,
-            "endTime": exam.end_time
-        },
-        "studentExam": {
-            "studentExamId": student_exam.id,
-            "endTime": student_exam.end_time
-        },
-        "serverTime": datetime.utcnow().isoformat(),
-        "questions": questions,
-        "answers": answers
+        'id': exam.id,
+        'examName': exam.exam_name,
+        'teacherID': exam.teacher_id,
+        'subject': exam.subject.subject_name if exam.subject else None,
+        'startTime': exam.start_time,
+        'endTime': exam.end_time,
+        'durationMinutes': exam.duration_minutes,
+        'status': exam.status,
     })
+
 
 @exams_blueprint.route('/<int:exam_id>', methods=['PUT'])
 def update_exam(exam_id):
@@ -262,7 +282,7 @@ def update_exam(exam_id):
         start_time=_parse_datetime(data.get('startTime')) or existing.start_time,
         end_time=_parse_datetime(data.get('endTime')) or existing.end_time,
         duration_minutes=data.get('duration_minutes', existing.duration_minutes),
-        status=data.get('status', existing.status),
+        status=(data.get('status') or existing.status).strip().capitalize(),
         class_ids=data.get('classIds', []),
         questions=data.get('questions', []),
     )

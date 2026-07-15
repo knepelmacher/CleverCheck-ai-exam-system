@@ -39,7 +39,12 @@ class StudentExam(Base):
     # =========================
     start_time = Column("StartTime", DateTime, nullable=True)
     end_time = Column("EndTime", DateTime, nullable=True)
-
+    status = Column(
+        "Status",
+        String(20),
+        nullable=False,
+        default="NotStarted"
+    )
     # =========================
     # FINAL SCORE (exam level)
     # =========================

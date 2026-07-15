@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from controllers.subject_controller import subject_blueprint
 from controllers.classes_controller import classes_blueprint
 from controllers.teachers_controller import teachers_blueprint
@@ -13,19 +13,18 @@ from controllers.teacher_answers_controller import teacher_answers_blueprint
 from controllers.student_client_controller import student_client_bp
 from flask_cors import CORS
 from config import Config
-from server.middleware.auth_middleware import token_required
+from server import config
 from server.controllers.students_auth_controller import auth_bp
 from server.controllers.teacher_auth_controller import auth_teacher_bp
 #from server.controllers.exam_classes_controller import exam_classes_blueprint
 #from server.controllers.teacher_classes_controller import teacher_classes_blueprint
 #from db_connection import init_db
-from services.grading_service import GradingService
 #from controllers.grading_controller import create_grading_blueprint
 import os
 from sentence_transformers import SentenceTransformer
-from db_connection_test import health_check
-#import server.models
+from db_connection import health_check
 from flask_cors import CORS
+from server.jobs.exams_jobs import start_exam_jobs
 
 if health_check():
     print("DB connected successfully ✅")
@@ -33,47 +32,9 @@ else:
     print("DB connection failed ❌")
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
+CORS(app, supports_credentials=True, origins=[Config.CLIENT_PATH])
 app.config["SECRET_KEY"] = Config.SECRET_KEY
 #init_db(app)
-
-# Public routes that don't require authentication
-PUBLIC_ROUTES = [
-    '/api/auth/login',
-    '/api/auth/me',
-    '/api/auth',
-    '/api/auth_teacher/login',
-    '/api/auth_teacher/me',
-    '/api/auth_teacher',
-    '/api/student-client',
-]
-
-
-@app.before_request
-def require_auth():
-    # Allow OPTIONS (CORS preflight) without auth
-    if request.method == 'OPTIONS':
-        return '', 200
-
-    # Allow public routes without auth
-    path = request.path.rstrip('/')
-    for public in PUBLIC_ROUTES:
-        if path.startswith(public):
-            return None
-
-    # Check for valid token
-    token = request.cookies.get("token")
-    if not token:
-        return jsonify({"error": "אין טוקן"}), 401
-
-    try:
-        import jwt as pyjwt
-        data = pyjwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
-        request.user = data
-    except Exception:
-        return jsonify({"error": "טוקן לא תקין"}), 401
-
-    return None
 
 # 1. טוען מודל
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -88,6 +49,9 @@ def require_auth():
   #  create_grading_blueprint(grading_service),
  #   url_prefix='/api/grading'
 #)
+
+start_exam_jobs()
+
 app.register_blueprint(subject_blueprint, url_prefix='/api/subjects')
 app.register_blueprint(classes_blueprint, url_prefix='/api/classes')
 app.register_blueprint(teachers_blueprint, url_prefix='/api/teachers')
@@ -103,9 +67,6 @@ app.register_blueprint(auth_bp, url_prefix="/api/auth")
 app.register_blueprint(auth_teacher_bp, url_prefix="/api/auth_teacher")
 
 
-
-#app.register_blueprint(exam_classes_blueprint, url_prefix='/api/exam-classes')
-#app.register_blueprint(teacher_classes_blueprint, url_prefix='/api/teacher-classes')
 if __name__ == '__main__':
     app.run(host="localhost", port=5000)
 

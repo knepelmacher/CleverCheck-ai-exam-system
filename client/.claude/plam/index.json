@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-07-01T00:00:00Z",
+  "project_root": "c:/git/CleverCheck",
+  "schema_version": 1,
+  "total_files": 0,
+  "plam_count": 23,
+  "skipped_count": 0,
+  "files": {
+    "server/app.py": {"plam_file": "server--app--py.md", "source_type": "python", "subtype": "entry", "exports_count": 0},
+    "server/config.py": {"plam_file": "server--config--py.md", "source_type": "python", "subtype": "config", "exports_count": 1},
+    "server/exceptions/exceptions.py": {"plam_file": "server--exceptions--exceptions--py.md", "source_type": "python", "subtype": "exception", "exports_count": 6},
+    "server/exceptions/error_handlers.py": {"plam_file": "server--exceptions--error_handlers--py.md", "source_type": "python", "subtype": "exception", "exports_count": 1},
+    "server/middleware/auth_middleware.py": {"plam_file": "server--middleware--auth_middleware--py.md", "source_type": "python", "subtype": "middleware", "exports_count": 1},
+    "server/services/grading_service.py": {"plam_file": "server--services--grading_service--py.md", "source_type": "python", "subtype": "service", "exports_count": 1},
+    "server/services/auth_service.py": {"plam_file": "server--services--auth_service--py.md", "source_type": "python", "subtype": "service", "exports_count": 1},
+    "server/services/jwt_service.py": {"plam_file": "server--services--jwt_service--py.md", "source_type": "python", "subtype": "service", "exports_count": 2},
+    "server/models/exams.py": {"plam_file": "server--models--exams--py.md", "source_type": "python", "subtype": "model", "exports_count": 1},
+    "server/models/questions.py": {"plam_file": "server--models--questions--py.md", "source_type": "python", "subtype": "model", "exports_count": 1},
+    "server/models/student_answer.py": {"plam_file": "server--models--student_answer--py.md", "source_type": "python", "subtype": "model", "exports_count": 1},
+    "server/models/student.py": {"plam_file": "server--models--student--py.md", "source_type": "python", "subtype": "model", "exports_count": 1},
+    "server/models/teachers.py": {"plam_file": "server--models--teachers--py.md", "source_type": "python", "subtype": "model", "exports_count": 1},
+    "server/controllers/grading_controller.py": {"plam_file": "server--controllers--grading_controller--py.md", "source_type": "python", "subtype": "controller", "exports_count": 2},
+    "server/controllers/students_auth_controller.py": {"plam_file": "server--controllers--students_auth_controller--py.md", "source_type": "python", "subtype": "controller", "exports_count": 1},
+    "server/controllers/exams_controller.py": {"plam_file": "server--controllers--exams_controller--py.md", "source_type": "python", "subtype": "controller", "exports_count": 1},
+    "client/student/src/store/examStore.ts": {"plam_file": "client--student--src--store--examStore--ts.md", "source_type": "typescript", "subtype": "store", "exports_count": 2},
+    "client/student/src/store/authStore.ts": {"plam_file": "client--student--src--store--authStore--ts.md", "source_type": "typescript", "subtype": "store", "exports_count": 1},
+    "client/student/src/store/uiStore.ts": {"plam_file": "client--student--src--store--uiStore--ts.md", "source_type": "typescript", "subtype": "store", "exports_count": 1},
+    "client/student/src/types/index.ts": {"plam_file": "client--student--src--types--index--ts.md", "source_type": "typescript", "subtype": "types", "exports_count": 12},
+    "client/student/src/services/examService.ts": {"plam_file": "client--student--src--services--examService--ts.md", "source_type": "typescript", "subtype": "service", "exports_count": 1},
+    "client/student/src/services/authService.ts": {"plam_file": "client--student--src--services--authService--ts.md", "source_type": "typescript", "subtype": "service", "exports_count": 1},
+    "client/student/src/App.tsx": {"plam_file": "client--student--src--App--tsx.md", "source_type": "tsx", "subtype": "component", "exports_count": 2}
+  }
+}

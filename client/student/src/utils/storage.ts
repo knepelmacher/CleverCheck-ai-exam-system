@@ -1,11 +1,4 @@
-const STORAGE_KEYS = {
-  answers: 'answers',
-  currentQuestion: 'currentQuestion',
-  markedQuestions: 'markedQuestions',
-  inProgressQuestions: 'inProgressQuestions',
-  visitedQuestions: 'visitedQuestions',
-  lastSavedAt: 'lastSavedAt',
-};
+const STORAGE_PREFIX = (studentExamId: number) => `exam_${studentExamId}_`;
 
 export const saveExamUiState = (
   studentExamId: number,
@@ -15,6 +8,7 @@ export const saveExamUiState = (
   visitedQuestions: number[],
   inProgressQuestions: number[],
 ) => {
+  const p = STORAGE_PREFIX(studentExamId);
   const payload = {
     studentExamId,
     answers,
@@ -25,21 +19,22 @@ export const saveExamUiState = (
     lastSavedAt: new Date().toISOString(),
   };
 
-  localStorage.setItem(STORAGE_KEYS.answers, JSON.stringify(payload.answers));
-  localStorage.setItem(STORAGE_KEYS.currentQuestion, String(payload.currentQuestion));
-  localStorage.setItem(STORAGE_KEYS.markedQuestions, JSON.stringify(payload.markedQuestions));
-  localStorage.setItem(STORAGE_KEYS.inProgressQuestions, JSON.stringify(payload.inProgressQuestions));
-  localStorage.setItem(STORAGE_KEYS.visitedQuestions, JSON.stringify(payload.visitedQuestions));
-  localStorage.setItem(STORAGE_KEYS.lastSavedAt, payload.lastSavedAt);
+  localStorage.setItem(`${p}answers`, JSON.stringify(payload.answers));
+  localStorage.setItem(`${p}currentQuestion`, String(payload.currentQuestion));
+  localStorage.setItem(`${p}markedQuestions`, JSON.stringify(payload.markedQuestions));
+  localStorage.setItem(`${p}inProgressQuestions`, JSON.stringify(payload.inProgressQuestions));
+  localStorage.setItem(`${p}visitedQuestions`, JSON.stringify(payload.visitedQuestions));
+  localStorage.setItem(`${p}lastSavedAt`, payload.lastSavedAt);
 };
 
-export const loadExamUiState = () => {
-  const answersRaw = localStorage.getItem(STORAGE_KEYS.answers);
-  const currentQuestionRaw = localStorage.getItem(STORAGE_KEYS.currentQuestion);
-  const markedQuestionsRaw = localStorage.getItem(STORAGE_KEYS.markedQuestions);
-  const inProgressQuestionsRaw = localStorage.getItem(STORAGE_KEYS.inProgressQuestions);
-  const visitedQuestionsRaw = localStorage.getItem(STORAGE_KEYS.visitedQuestions);
-  const lastSavedAtRaw = localStorage.getItem(STORAGE_KEYS.lastSavedAt);
+export const loadExamUiState = (studentExamId: number) => {
+  const p = STORAGE_PREFIX(studentExamId);
+  const answersRaw = localStorage.getItem(`${p}answers`);
+  const currentQuestionRaw = localStorage.getItem(`${p}currentQuestion`);
+  const markedQuestionsRaw = localStorage.getItem(`${p}markedQuestions`);
+  const inProgressQuestionsRaw = localStorage.getItem(`${p}inProgressQuestions`);
+  const visitedQuestionsRaw = localStorage.getItem(`${p}visitedQuestions`);
+  const lastSavedAtRaw = localStorage.getItem(`${p}lastSavedAt`);
 
   return {
     answers: answersRaw ? JSON.parse(answersRaw) : {},

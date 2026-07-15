@@ -2,8 +2,8 @@ from urllib import request
 
 from fontTools.config import OPTIONS
 
-from server.services.auth_service import validate_student
-from server.services.jwt_service import create_token
+from server.services.auth_student_service import validate_student
+from server.services.jwt_student_service import create_token
 from flask import Blueprint, request, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,7 +13,7 @@ from server.models.student_exams import Base
 
 """
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 Base.metadata.create_all(engine)
 
@@ -68,17 +68,32 @@ def login():
         except Exception as e:
             print("LOGIN ERROR:", e)
             return jsonify({"error": str(e)}), 500
+
+
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    from flask import make_response
+    resp = make_response(jsonify({"success": True, "message": "התנתקת בהצלחה"}))
+    resp.set_cookie('token', '', max_age=0, path='/', httponly=True, samesite='Lax')
+    return resp
+
+
 @auth_bp.route('/me', methods=['GET'])
 def get_student_me():
     try:
-        from server.services.jwt_service import get_student_data
+        from server.services.jwt_student_service import get_student_data
         data = get_student_data()
-        print(data)
+
+        if not data:
+            return jsonify({'error': 'טוקן לא תקין'}), 401
+
         return jsonify({
-            'student_id': data['student_id'],
-            'role': data['role'],
+            'student_id': data.get('student_id'),
+            'role': data.get('role'),
             'student_name': data.get('student_name', 'student'),
+            'class_id': data.get('class_id'),
         }), 200
-    except Exception:
+    except Exception as e:
+        print(f"[ME ERROR] {e}")
         return jsonify({'error': 'טוקן לא תקין'}), 401
 

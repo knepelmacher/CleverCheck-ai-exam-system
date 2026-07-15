@@ -3,23 +3,18 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { useAuthStore } from '../store/authStore';
 
 export const LoginPage = () => {
-  const isAuthenticated = useAuthStore((state: { isAuthenticated: boolean }) => state.isAuthenticated);
-  const loading = useAuthStore((state: { loading: boolean }) => state.loading);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const loading = useAuthStore((s) => s.loading);
 
-  if (loading) {
-    return <div className="page-loading">בודק כניסה…</div>;
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (loading) return <div className="page-loading">בודק כניסה…</div>;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="login-page" dir="rtl">
       <div className="login-hero">
-        <p className="eyebrow">CleverCheck</p>
-        <h1>מערכת מבחנים חכמה ונוחה</h1>
-        <p>עבודה על מבחנים, שמירה אוטומטית וסקירת תוצאות מכל מקום.</p>
+        <p className="eyebrow">Gradex</p>
+        <h1>מערכת מבחנים חכמה</h1>
+        <p>עבודה על מבחנים, שמירה אוטומטית וסקירת תוצאות</p>
       </div>
       <div className="login-card">
         <LoginForm />

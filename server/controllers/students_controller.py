@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from server.db_connection import get_db
 from server.dtos.student_dto import StudentDTO
-from server.services.jwt_service import create_token
+from server.services.jwt_student_service import create_token
 from server.services.student_service import StudentService
 from server.repositories.student_repository import StudentRepository
 from server.models.student import Base
@@ -12,7 +12,7 @@ from server.models.student import Base
 
 """
 engine = create_engine(
-    'mssql+pyodbc://localhost/GradexDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
+    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
 )
 Base.metadata.create_all(engine)
 

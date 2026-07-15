@@ -1,0 +1,3 @@
+from server.services.student_grades.my_stanza_service.correction_answer_scribens import ScribensService
+
+scribens_service = ScribensService()

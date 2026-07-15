@@ -13,21 +13,14 @@ logger = logging.getLogger(__name__)
 from urllib.parse import quote_plus
 
 #_SERVER = os.getenv('DB_SERVER', r'localhost\SQLEXPRESS')
+#_DATABASE = os.getenv('DB_NAME', 'CleverCheckDB')
+#_DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
 _SERVER = '192.168.43.13'
-
-#_DATABASE = os.getenv('DB_NAME', 'GradexDB')
 _DATABASE = 'CleverCheckDB'
-
 _DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
 
 #params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};Trusted_Connection=yes")
-params = quote_plus(
-    f"DRIVER={_DRIVER};"
-    f"SERVER={_SERVER};"
-    f"DATABASE={_DATABASE};"
-    f"UID=gradex_user;"
-    f"PWD=Gradex123!"
-)
+params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};UID=gradex_user;PWD=Gradex123!")
 
 DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={params}"
 # ── Engine ───────────────────────────────────────────────────
