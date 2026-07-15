@@ -1,9 +1,9 @@
 import { httpClient } from './httpClient'
-import type { User } from '../models/User'
+import type { Teacher } from '../models/Teacher'
 import type { LoginPayload } from '../models/Auth'
 
-export async function login(payload: LoginPayload): Promise<User> {
-  const response = await httpClient.post<User>('/auth_teacher/login', {
+export async function login(payload: LoginPayload): Promise<Teacher> {
+  const response = await httpClient.post<Teacher>('/auth_teacher/login', {
     username: payload.username,
     password: payload.password,
   })
@@ -16,8 +16,8 @@ export async function login(payload: LoginPayload): Promise<User> {
   return response.data
 }
 
-export async function me(): Promise<User> {
-  const response = await httpClient.get<User>('/auth_teacher/me')
+export async function me(): Promise<Teacher> {
+  const response = await httpClient.get<Teacher>('/auth_teacher/me')
   return response.data
 }
 

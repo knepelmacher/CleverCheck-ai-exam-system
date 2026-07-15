@@ -25,6 +25,16 @@ export async function getExamById(id: number): Promise<Exam | null> {
   return response.data ?? null
 }
 
+function computeStatus(startTime: string, endTime: string): string {
+  if (!startTime || !endTime) return 'Draft'
+  const now = new Date()
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+  if (now < start) return 'Draft'
+  if (now >= start && now <= end) return 'Active'
+  return 'Closed'
+}
+
 function buildExamPayload(payload: ExamDraft) {
   const questionTypeMap: Record<string, number> = {
     american: 1,
@@ -33,6 +43,8 @@ function buildExamPayload(payload: ExamDraft) {
     numeric: 4,
   }
 
+  const status = computeStatus(payload.startTime, payload.endTime)
+
   return {
     name: payload.name,
     classIds: payload.classIds,
@@ -40,7 +52,7 @@ function buildExamPayload(payload: ExamDraft) {
     endTime: payload.endTime || new Date().toISOString(),
     duration_minutes: payload.duration_minutes || 60,
     subject_id: payload.subject_id || 1,
-    status: 'draft',
+    status,
     questions: payload.questions.map((q) => ({
       text: q.text,
       questionType: q.questionType,
@@ -58,4 +70,8 @@ export async function createExam(payload: ExamDraft): Promise<void> {
 
 export async function updateExam(id: number, payload: ExamDraft): Promise<void> {
   await httpClient.put(`/exams/${id}`, buildExamPayload(payload))
+}
+
+export async function deleteExam(id: number): Promise<void> {
+  await httpClient.delete(`/exams/${id}`)
 }

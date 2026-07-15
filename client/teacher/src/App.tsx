@@ -14,6 +14,7 @@ import StudentExamDetailsPage from './pages/StudentExamDetailsPage'
 import AdminPage from './pages/AdminPage'
 import AdminStudentsPage from './pages/AdminStudentsPage'
 import AdminTeachersPage from './pages/AdminTeachersPage'
+import AdminSubjectsPage from './pages/AdminSubjectsPage'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/admin/students" element={<AdminStudentsPage />} />
             <Route path="/admin/teachers" element={<AdminTeachersPage />} />
+            <Route path="/admin/subjects" element={<AdminSubjectsPage />} />
           </Route>
         </Route>
       </Routes>

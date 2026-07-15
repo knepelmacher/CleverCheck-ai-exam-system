@@ -188,13 +188,14 @@ if __name__ == "__main__":
 
     nlp = stanza.Pipeline(
         lang="he",
-        dir=r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\stanza-he\resources",
+        dir=r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\my_model\stanza-he\resources",
         processors="tokenize,pos,lemma,depparse",
         download_method=None,
         verbose=False
     )
 
-    text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    #text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    text = "מים"
 
     result = analyze_concepts(text, nlp)
 

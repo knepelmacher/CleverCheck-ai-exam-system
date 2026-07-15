@@ -3,6 +3,7 @@ import { Card, CardContent, Chip, Divider, List, ListItem, ListItemText, Stack, 
 import { useParams } from 'react-router-dom'
 import { getExamById } from '../api/exam.api'
 import type { Exam } from '../models/Exam'
+import BackButton from '../components/BackButton'
 
 export default function StudentExamDetailsPage() {
   const { id, studentId } = useParams<{ id: string; studentId: string }>()
@@ -30,8 +31,10 @@ export default function StudentExamDetailsPage() {
       return answer.answer_text
     }
 
-    if (answer.selected_option_text) {
-      return answer.selected_option_text
+    if (answer.selected_option_id) {
+      const question = exam.questions?.find((q) => q.id === questionId)
+      const option = question?.options?.find((o) => o.id === answer.selected_option_id)
+      if (option) return option.option_text
     }
 
     return 'לא נענתה'
@@ -44,6 +47,7 @@ export default function StudentExamDetailsPage() {
 
   return (
     <Stack spacing={3}>
+      <BackButton to={`/exams/${exam.id}/results`} />
       <Stack spacing={1}>
         <Typography variant="h4" fontWeight={700}>פרטי מבחן לסטודנט</Typography>
         <Typography color="text.secondary">סקירה של התשובות, הציונים והסטטוס הסופי.</Typography>
@@ -68,8 +72,9 @@ export default function StudentExamDetailsPage() {
                   primary={question.question_text}
                   secondary={
                     <Stack spacing={0.5}>
+                      <Typography variant="body2">תשובה של המורה: {question.correct_answer}</Typography>
                       <Typography variant="body2">תשובה של הסטודנט: {getStudentAnswerText(question.id)}</Typography>
-                      <Typography variant="body2">ניקוד שניתן: {getStudentAnswerScore(question.id)} / {question.max_score}</Typography>
+                      <Typography variant="body2">ניקוד שניתן: {question.max_score} / {getStudentAnswerScore(question.id)}</Typography>
                     </Stack>
                   }
                 />

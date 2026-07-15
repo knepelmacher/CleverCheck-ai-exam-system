@@ -20,7 +20,10 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { createExam, getExamById, updateExam } from '../api/exam.api'
 import { getClasses } from '../api/class.api'
 import type { ClassDTO } from '../api/class.api'
+import { getSubjects } from '../api/subject.api'
+import type { Subject } from '../models/Subject'
 import type { ExamDraft, QuestionDraft, QuestionTypeValue } from '../models/ExamDraft'
+import BackButton from '../components/BackButton'
 
 const emptyDraft = (): ExamDraft => ({
   id: crypto.randomUUID(),
@@ -36,7 +39,7 @@ const emptyDraft = (): ExamDraft => ({
 
 const initialQuestion = (): QuestionDraft => ({
   id: crypto.randomUUID(),
-  questionType: 'american',
+  questionType: 'open',
   text: '',
   score: 10,
   options: ['', '', '', ''],
@@ -48,6 +51,7 @@ export default function ExamEditorPage() {
   const isEditing = id && id !== 'new'
   const navigate = useNavigate()
   const [classes, setClasses] = useState<ClassDTO[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
   const [loading, setLoading] = useState(!!isEditing)
   const [draft, setDraft] = useState<ExamDraft>(emptyDraft())
 
@@ -55,6 +59,9 @@ export default function ExamEditorPage() {
     getClasses()
       .then(setClasses)
       .catch(() => console.error('Failed to load classes'))
+    getSubjects()
+      .then(setSubjects)
+      .catch(() => console.error('Failed to load subjects'))
   }, [])
 
   useEffect(() => {
@@ -121,12 +128,13 @@ export default function ExamEditorPage() {
 
   return (
     <Stack spacing={3}>
+      <BackButton to="/exams" />
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={1}>
         <Box>
           <Typography variant="h4" fontWeight={700}>{isEditing ? 'עריכת מבחן' : 'יצירת מבחן'}</Typography>
           <Typography color="text.secondary">{isEditing ? 'ערוך את פרטי המבחן' : 'הוסף שאלות, בחר כיתות והגדר ניקוד.'}</Typography>
         </Box>
-        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave}>שמור מבחן</Button>
+        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} sx={{ gap: 0.5 }}>שמור מבחן</Button>
       </Stack>
 
       <Card>
@@ -145,6 +153,20 @@ export default function ExamEditorPage() {
                 {classes.map((cls) => (
                   <MenuItem key={cls.id} value={cls.id}>
                     {cls.className}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl>
+              <InputLabel>מקצוע</InputLabel>
+              <Select
+                value={draft.subject_id}
+                onChange={(event) => setDraft((current) => ({ ...current, subject_id: Number(event.target.value) }))}
+                input={<OutlinedInput label="נושא" />}
+              >
+                {subjects.map((subject) => (
+                  <MenuItem key={subject.subject_id} value={subject.subject_id}>
+                    {subject.subject_name}
                   </MenuItem>
                 ))}
               </Select>
@@ -211,7 +233,7 @@ export default function ExamEditorPage() {
         </Card>
       ))}
 
-      <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setDraft((current) => ({ ...current, questions: [...current.questions, initialQuestion()] }))}>הוסף שאלה</Button>
+      <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setDraft((current) => ({ ...current, questions: [...current.questions, initialQuestion()] }))} sx={{ gap: 0.5 }}>הוסף שאלה</Button>
     </Stack>
   )
 }

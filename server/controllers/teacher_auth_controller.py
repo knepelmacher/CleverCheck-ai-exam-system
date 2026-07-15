@@ -80,9 +80,10 @@ def get_teacher_me():
         data = get_teacher_data()
         print(data)
         return jsonify({
-            'teacher_id': data['teacher_id'],
+            'id': data['teacher_id'],
             'role': data['role'],
-            'teacher_name': data.get('teacher_name', 'teacher'),
+            "first_name": data["teacher_name"],
+            "last_name": data.get("last_name", ""),
         }), 200
     except Exception:
         return jsonify({'error': 'טוקן לא תקין'}), 401

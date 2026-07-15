@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
   Button,
@@ -27,6 +27,7 @@ import {
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material'
 import { getTeachers, createTeacher, updateTeacher, deleteTeacher } from '../api/teacher.api'
 import type { TeacherDTO } from '../api/teacher.api'
+import BackButton from '../components/BackButton'
 
 interface FormData {
   teacher_id: string
@@ -60,6 +61,26 @@ export default function AdminTeachersPage() {
     severity: 'success',
   })
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+    if (!form.teacher_id || form.teacher_id.length < 5 || !/^\d+$/.test(form.teacher_id))
+      newErrors.teacher_id = 'תעודת זהות חייבת להכיל לפחות 5 ספרות'
+    if (!form.first_name.trim()) newErrors.first_name = 'שדה חובה'
+    if (!form.last_name.trim()) newErrors.last_name = 'שדה חובה'
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      newErrors.email = 'דוא"ל לא תקין'
+    if (!editingId) {
+      if (!form.password) newErrors.password = 'שדה חובה'
+      else if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/.test(form.password))
+        newErrors.password = 'לפחות 8 תווים — אותיות באנגלית, מספרים וסימנים'
+    } else if (form.password && !/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/.test(form.password)) {
+      newErrors.password = 'לפחות 8 תווים — אותיות באנגלית, מספרים וסימנים'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const fetchTeachers = async () => {
     try {
@@ -101,6 +122,8 @@ export default function AdminTeachersPage() {
   }
 
   const handleSave = async () => {
+    if (!validateForm()) return
+
     try {
       const payload = {
         teacher_id: Number(form.teacher_id),
@@ -138,6 +161,11 @@ export default function AdminTeachersPage() {
     }
   }
 
+  const sortedTeachers = useMemo(
+    () => [...teachers].sort((a, b) => a.last_name.localeCompare(b.last_name, 'he')),
+    [teachers],
+  )
+
   const updateField = (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
@@ -152,12 +180,13 @@ export default function AdminTeachersPage() {
 
   return (
     <Stack spacing={3}>
+      <BackButton to="/admin" />
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Box>
           <Typography variant="h4" fontWeight={700}>ניהול מורים</Typography>
           <Typography color="text.secondary">{teachers.length} מורים במערכת</Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openAddDialog}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openAddDialog} sx={{ gap: 0.5 }}>
           הוסף מורה
         </Button>
       </Box>
@@ -166,28 +195,28 @@ export default function AdminTeachersPage() {
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 700 }}>ת"ז</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>שם פרטי</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>שם משפחה</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>שם פרטי</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>ת"ז</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>דוא"ל</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>תפקיד</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>סטטוס</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>פעולות</TableCell>
+              <TableCell sx={{ fontWeight: 700, textAlign: 'center', minWidth: 100 }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {teachers.length === 0 ? (
+            {sortedTeachers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                   אין מורים להצגה
                 </TableCell>
               </TableRow>
             ) : (
-              teachers.map((teacher) => (
+              sortedTeachers.map((teacher) => (
                 <TableRow key={teacher.id} hover>
-                  <TableCell>{teacher.id}</TableCell>
-                  <TableCell>{teacher.first_name}</TableCell>
                   <TableCell>{teacher.last_name}</TableCell>
+                  <TableCell>{teacher.first_name}</TableCell>
+                  <TableCell>{teacher.id}</TableCell>
                   <TableCell>{teacher.email}</TableCell>
                   <TableCell>
                     <Chip
@@ -239,6 +268,8 @@ export default function AdminTeachersPage() {
               disabled={!!editingId}
               required
               fullWidth
+              error={Boolean(errors.teacher_id)}
+              helperText={errors.teacher_id}
             />
             <Stack direction="row" spacing={2}>
               <TextField
@@ -247,6 +278,8 @@ export default function AdminTeachersPage() {
                 onChange={updateField('first_name')}
                 required
                 fullWidth
+                error={Boolean(errors.first_name)}
+                helperText={errors.first_name}
               />
               <TextField
                 label="שם משפחה"
@@ -254,6 +287,8 @@ export default function AdminTeachersPage() {
                 onChange={updateField('last_name')}
                 required
                 fullWidth
+                error={Boolean(errors.last_name)}
+                helperText={errors.last_name}
               />
             </Stack>
             <TextField
@@ -263,6 +298,8 @@ export default function AdminTeachersPage() {
               onChange={updateField('email')}
               required
               fullWidth
+              error={Boolean(errors.email)}
+              helperText={errors.email}
             />
             <TextField
               label={editingId ? 'סיסמה חדשה (השאר ריק כדי לא לשנות)' : 'סיסמה'}
@@ -271,6 +308,8 @@ export default function AdminTeachersPage() {
               onChange={updateField('password')}
               required={!editingId}
               fullWidth
+              error={Boolean(errors.password)}
+              helperText={errors.password}
             />
             <TextField
               label="תפקיד"

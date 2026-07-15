@@ -6,7 +6,7 @@ export default function AdminPage() {
     <Stack spacing={3}>
       <Box>
         <Typography variant="h4" fontWeight={700}>לוח ניהול</Typography>
-        <Typography color="text.secondary">ניהול תלמידים ומורים מהירה ונוחה.</Typography>
+        <Typography color="text.secondary">ניהול תלמידים, מורים ומקצועות לימוד.</Typography>
       </Box>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
@@ -24,6 +24,15 @@ export default function AdminPage() {
               <Typography variant="h6" mb={2}>ניהול מורים</Typography>
               <Typography color="text.secondary" mb={2}>שמור על הרשאות ונתוני משתמשים.</Typography>
               <Button component={Link} to="/admin/teachers" variant="contained">לניהול מורים</Button>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" mb={2}>ניהול מקצועות</Typography>
+              <Typography color="text.secondary" mb={2}>הוסף, ערוך או מחק מקצועות לימוד.</Typography>
+              <Button component={Link} to="/admin/subjects" variant="contained">לניהול מקצועות</Button>
             </CardContent>
           </Card>
         </Grid>
