@@ -12,7 +12,7 @@ class Student(Base):
     # =========================
     # PK
     # =========================
-    id = Column("StudentID", Integer, primary_key=True,autoincrement=False)
+    id = Column("StudentID", primary_key=True,autoincrement=False)
 
     # =========================
     # FIELDS

@@ -82,7 +82,7 @@ def build_concepts(sent):
     for w in sent.words:
         children.setdefault(w.head, []).append(w)
 
-    DEPREL_WEIGHTS = {"nsubj": 30, "obj": 25, "obl": 15, "compound": 5, "amod": 3}
+    DEPREL_WEIGHTS = {"root":40,"nsubj": 30, "obj": 25, "obl": 15, "compound": 5, "amod": 3}
 
     def collect(node):
         tokens = [node]
@@ -188,13 +188,14 @@ if __name__ == "__main__":
 
     nlp = stanza.Pipeline(
         lang="he",
-        dir=r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\stanza-he\resources",
+        dir=r"C:\Users\kuperbergz\PycharmProjects\CleverCheck\server\my_model\stanza-he\resources",
         processors="tokenize,pos,lemma,depparse",
         download_method=None,
         verbose=False
     )
 
-    text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    #text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    text = "מים"
 
     result = analyze_concepts(text, nlp)
 

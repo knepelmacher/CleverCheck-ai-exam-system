@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { /* Link as RouterLink, */ useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,17 +8,18 @@ import {
   Box,
   Button,
   Container,
-  /* Link, */
+  InputAdornment,
   Paper,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
+import { Person as PersonIcon, Lock as LockIcon } from '@mui/icons-material'
 import { useAuth } from '../context/AuthContext'
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  username: z.string().min(1, 'שם משתמש נדרש'),
+  password: z.string().min(6, 'סיסמה חייבת להכיל לפחות 6 תווים'),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -34,89 +35,134 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: '',
-      password: '',
-    },
+    defaultValues: { username: '', password: '' },
   })
 
   const onSubmit = async (values: LoginFormValues) => {
     setServerError(null)
-
     try {
       await signIn(values)
       navigate('/dashboard')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed. Please try again.'
+      const message = error instanceof Error ? error.message : 'ההתחברות נכשלה. אנא נסה שנית.'
       setServerError(message)
     }
   }
 
   return (
-    <Container maxWidth="xs" sx={{ py: 6 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Stack spacing={3}>
-          <Box>
-            <Typography component="h1" variant="h5" gutterBottom>
-              Student / Teacher Login
-            </Typography>
-            <Typography color="text.secondary" variant="body2">
-              Enter your email and password to access CleverCheck.
-            </Typography>
-          </Box>
-
-          {serverError ? <Alert severity="error">{serverError}</Alert> : null}
-
-          <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)}>
-            <Stack spacing={2}>
-              <Controller
-                name="username"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Username"
-                    type="text"
-                    required
-                    fullWidth
-                    error={Boolean(errors.username)}
-                    helperText={errors.username?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Password"
-                    type="password"
-                    required
-                    fullWidth
-                    error={Boolean(errors.password)}
-                    helperText={errors.password?.message}
-                  />
-                )}
-              />
-
-              <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
-                Sign in
-              </Button>
-            </Stack>
-          </Box>
-
-          {/*
-          <Typography variant="body2" color="text.secondary">
-            Need an account?{' '}
-            <Link component={RouterLink} to="/register">
-              Register
-            </Link>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        bgcolor: 'grey.50',
+      }}
+    >
+      <Container maxWidth="xs">
+        {/* Logo */}
+        <Box textAlign="center" mb={4}>
+          <Typography variant="h3" fontWeight={300} color="text.primary" letterSpacing={6} sx={{ textTransform: 'uppercase' }}>
+            Gradex
           </Typography>
-          */}
-        </Stack>
-      </Paper>
-    </Container>
+          <Box sx={{ width: 40, height: 3, bgcolor: 'primary.main', mx: 'auto', mt: 1, borderRadius: 1 }} />
+        </Box>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="h5" fontWeight={700} gutterBottom>
+                כניסת מורה
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                הזן את פרטיך כדי לגשת למערכת
+              </Typography>
+            </Box>
+
+            {serverError ? (
+              <Alert severity="error" sx={{ borderRadius: 2 }}>
+                {serverError}
+              </Alert>
+            ) : null}
+
+            <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)}>
+              <Stack spacing={2.5}>
+                <Controller
+                  name="username"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="שם משתמש"
+                      placeholder="הזן תעודת זהות"
+                      required
+                      fullWidth
+                      error={Boolean(errors.username)}
+                      helperText={errors.username?.message}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon color="action" fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="סיסמה"
+                      type="password"
+                      required
+                      fullWidth
+                      error={Boolean(errors.password)}
+                      helperText={errors.password?.message}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon color="action" fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={isSubmitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    boxShadow: '0 4px 16px rgba(255,122,0,0.35)',
+                    '&:hover': { boxShadow: '0 6px 24px rgba(255,122,0,0.45)' },
+                  }}
+                >
+                  {isSubmitting ? 'מתחבר...' : 'התחבר'}
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
   )
 }

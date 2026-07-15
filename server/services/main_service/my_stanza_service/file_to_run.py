@@ -15,11 +15,18 @@ def get_student_score(student_text,teacher_text,answer_score):
     )
     synonym_client = SynonymClient()
     result = analyze_texts(student_text, teacher_text, answer_score, nlp, synonym_client)
-    return result["total_answer_score"]
+    #return result["total_answer_score"]
+    return result
 
 
 if __name__ == "__main__":
     students = [
+        "השמש מחממת את הים המים מתאדים לאדים עולים לשמים ושם מתעבים לעננים ואז יורד גשם והם חוזרים לים",
+        "כמה פעמים מחברים את אותו מספר",
+        "כי לא מעניין לי",
+        "עכשיו נראה לי שהשעה 16:00",
+        "פטריות ושוקו",
+        "קולה",
         "מערכת ההפעלה אחראית על ניהול משאבי החומרה, הקצאת זיכרון, תזמון תהליכים ותקשורת בין התוכנות לרכיבי החומרה.",
         "מערכת ההפעלה מנהלת את החומרה, מקצה זיכרון ומבצעת תזמון תהליכים.",
         "מערכת ההפעלה מקצה זיכרון ליישומים ומנהלת תהליכים.",
@@ -32,9 +39,12 @@ if __name__ == "__main__":
         "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
     ]
 
-    teacher_text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    #teacher_text = "מערכת ההפעלה במחשב האישי מנהלת בצורה יעילה את משאבי החומרה"
+    #teacher_text = "השעה עכשיו 16:00"
+    teacher_text ="המים בים מתאדים ונהיים לעננים ואז יורד מהם גשם"
+
     for student_text in students:
-        result = get_student_score(student_text, teacher_text,100)
+        result = get_student_score(student_text, teacher_text,40)
         print(result["student_text"])
         print(result["total_answer_score"])
         print("matches_pos",result["matches_pos"])

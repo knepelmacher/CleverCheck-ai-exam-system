@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
   Button,
@@ -29,6 +29,7 @@ import { getStudents, createStudent, updateStudent, deleteStudent } from '../api
 import { getClasses } from '../api/class.api'
 import type { StudentDTO } from '../api/student.api'
 import type { ClassDTO } from '../api/class.api'
+import BackButton from '../components/BackButton'
 
 interface FormData {
   student_id: string
@@ -61,6 +62,25 @@ export default function AdminStudentsPage() {
     severity: 'success',
   })
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+    if (!form.student_id || form.student_id.length < 5 || !/^\d+$/.test(form.student_id))
+      newErrors.student_id = 'תעודת זהות חייבת להכיל לפחות 5 ספרות'
+    if (!form.first_name.trim()) newErrors.first_name = 'שדה חובה'
+    if (!form.last_name.trim()) newErrors.last_name = 'שדה חובה'
+    if (!form.class_id) newErrors.class_id = 'יש לבחור כיתה'
+    if (!editingId) {
+      if (!form.password) newErrors.password = 'שדה חובה'
+      else if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/.test(form.password))
+        newErrors.password = 'לפחות 8 תווים — אותיות באנגלית, מספרים וסימנים'
+    } else if (form.password && !/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/.test(form.password)) {
+      newErrors.password = 'לפחות 8 תווים — אותיות באנגלית, מספרים וסימנים'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const fetchData = async () => {
     try {
@@ -95,6 +115,17 @@ export default function AdminStudentsPage() {
     return cls?.className ?? `כיתה ${classId}`
   }
 
+  const sortedStudents = useMemo(() => {
+    const classMap = new Map(classes.map((c) => [c.id, c.className]))
+    return [...students].sort((a, b) => {
+      const classNameA = classMap.get(a.class_id) ?? ''
+      const classNameB = classMap.get(b.class_id) ?? ''
+      const classCmp = classNameA.localeCompare(classNameB, 'he')
+      if (classCmp !== 0) return classCmp
+      return a.last_name.localeCompare(b.last_name, 'he')
+    })
+  }, [students, classes])
+
   const openAddDialog = () => {
     setEditingId(null)
     setForm(emptyForm)
@@ -115,6 +146,8 @@ export default function AdminStudentsPage() {
   }
 
   const handleSave = async () => {
+    if (!validateForm()) return
+
     try {
       const payload = {
         student_id: Number(form.student_id),
@@ -165,12 +198,13 @@ export default function AdminStudentsPage() {
 
   return (
     <Stack spacing={3}>
+      <BackButton to="/admin" />
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Box>
           <Typography variant="h4" fontWeight={700}>ניהול תלמידים</Typography>
           <Typography color="text.secondary">{students.length} תלמידים במערכת</Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openAddDialog}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openAddDialog} sx={{ gap: 0.5 }}>
           הוסף תלמיד
         </Button>
       </Box>
@@ -179,27 +213,27 @@ export default function AdminStudentsPage() {
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 700 }}>ת"ז</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>שם פרטי</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>שם משפחה</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>שם פרטי</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>ת"ז</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>כיתה</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>סטטוס</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>פעולות</TableCell>
+              <TableCell sx={{ fontWeight: 700, textAlign: 'center', minWidth: 100 }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {students.length === 0 ? (
+            {sortedStudents.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                   אין תלמידים להצגה
                 </TableCell>
               </TableRow>
             ) : (
-              students.map((student) => (
+              sortedStudents.map((student) => (
                 <TableRow key={student.id} hover>
-                  <TableCell>{student.id}</TableCell>
-                  <TableCell>{student.first_name}</TableCell>
                   <TableCell>{student.last_name}</TableCell>
+                  <TableCell>{student.first_name}</TableCell>
+                  <TableCell>{student.id}</TableCell>
                   <TableCell>
                     <Chip label={getClassName(student.class_id)} size="small" variant="outlined" />
                   </TableCell>
@@ -246,6 +280,8 @@ export default function AdminStudentsPage() {
               disabled={!!editingId}
               required
               fullWidth
+              error={Boolean(errors.student_id)}
+              helperText={errors.student_id}
             />
             <Stack direction="row" spacing={2}>
               <TextField
@@ -254,6 +290,8 @@ export default function AdminStudentsPage() {
                 onChange={updateField('first_name')}
                 required
                 fullWidth
+                error={Boolean(errors.first_name)}
+                helperText={errors.first_name}
               />
               <TextField
                 label="שם משפחה"
@@ -261,6 +299,8 @@ export default function AdminStudentsPage() {
                 onChange={updateField('last_name')}
                 required
                 fullWidth
+                error={Boolean(errors.last_name)}
+                helperText={errors.last_name}
               />
             </Stack>
             <TextField
@@ -270,6 +310,8 @@ export default function AdminStudentsPage() {
               select
               required
               fullWidth
+              error={Boolean(errors.class_id)}
+              helperText={errors.class_id}
               SelectProps={{ native: true }}
             >
               <option value="">בחר כיתה</option>
@@ -286,6 +328,8 @@ export default function AdminStudentsPage() {
               onChange={updateField('password')}
               required={!editingId}
               fullWidth
+              error={Boolean(errors.password)}
+              helperText={errors.password}
             />
             <FormControlLabel
               control={

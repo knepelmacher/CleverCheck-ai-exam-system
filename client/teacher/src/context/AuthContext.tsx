@@ -1,20 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { User } from '../models/User'
+import type { Teacher } from '../models/Teacher'
 import type { LoginPayload } from '../models/Auth'
 import { login as loginRequest, me as meRequest, logout as logoutRequest } from '../api/auth.api'
 
 interface AuthContextValue {
-  user: User | null
+  user: Teacher | null
   loading: boolean
-  signIn: (payload: LoginPayload) => Promise<User>
+  signIn: (payload: LoginPayload) => Promise<Teacher>
   signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<Teacher | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Check session on mount — uses HTTP‑only cookie (credentials: 'include')
