@@ -19,15 +19,7 @@ from server.repositories.exam_repository import ExamRepository
 from server.models import StudentExam
 from server.db_connection import SessionLocal
 
-"""
-engine = create_engine(
-    'mssql+pyodbc://localhost/CleverCheckDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes'
-)
-Base.metadata.create_all(engine)
 
-Session = sessionmaker(bind=engine)
-session = Session()
-"""
 from server.db_connection import SessionLocal
 
 session = SessionLocal()
@@ -172,6 +164,25 @@ def get_student_exams():
         }
         for item in items
     ])
+
+
+@student_exams_blueprint.route('/student/data', methods=['GET'])
+def get_student_my_data():
+    """החזרת כל המבחנים הסגורים עם ציונים, ממוצע כיתתי, והתפלגות — בקריאה אחת."""
+    data = get_student_data()
+    if not data:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    student_id = data.get('student_id')
+    if not student_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        result = service.get_student_data_for_my_data_page(student_id)
+        return jsonify(result), 200
+    except Exception as e:
+        print("ERROR get_student_my_data:", repr(e))
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @student_exams_blueprint.route('/<int:student_exam_id>', methods=['PUT'])

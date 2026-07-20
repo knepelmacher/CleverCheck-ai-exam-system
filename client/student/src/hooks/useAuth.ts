@@ -20,7 +20,7 @@ export const useAuth = () => {
       })
       .catch(() => {
         setUser(null);
-        if (location.pathname !== '/login') {
+        if (location.pathname !== '/login' && location.pathname !== '/') {
           navigate('/login', { replace: true });
         }
       })

@@ -1,0 +1,562 @@
+/* ================================================================
+   GRADEX HOME PAGE — Full-Screen Cartoon Experience
+   ================================================================ */
+
+/* ------------------------------------------------------------------
+   ROOT VARIABLES & SCROLL CONTAINER
+   ------------------------------------------------------------------ */
+:root {
+  --orange: #f97316;
+  --orange-light: #fff4ed;
+  --orange-dark: #ea580c;
+  --orange-glow: rgba(249, 115, 22, 0.45);
+  --gold: #f59e0b;
+  --gold-light: #fef3c7;
+  --text-dark: #1f2937;
+  --text-mid: #4b5563;
+  --text-light: #6b7280;
+  --white: #ffffff;
+  --bg-gray: #f3f4f6;
+  --bg-green: #ecfdf5;
+  --bg-blue: #eff6ff;
+}
+
+.home-fullpage {
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  direction: rtl;
+}
+
+.home-screen {
+  position: absolute;
+  inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: scale(0.97);
+}
+.home-screen.current {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  z-index: 2;
+}
+
+/* ------------------------------------------------------------------
+   NAVIGATION DOTS
+   ------------------------------------------------------------------ */
+.home-dots {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 100;
+}
+.home-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d1d5db;
+  border: none;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  padding: 0;
+}
+.home-dot.active {
+  background: var(--orange);
+  box-shadow: 0 0 10px var(--orange-glow);
+  transform: scale(1.35);
+}
+.home-dot:hover {
+  background: var(--orange-light);
+  transform: scale(1.2);
+}
+.home-dot.active:hover {
+  background: var(--orange);
+  transform: scale(1.4);
+}
+
+/* ------------------------------------------------------------------
+   PROGRESS BAR — auto-play indicator
+   ------------------------------------------------------------------ */
+.home-progress-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  z-index: 100;
+  direction: ltr; /* fills left-to-right */
+}
+.home-progress-segment {
+  flex: 1;
+  height: 100%;
+  background: #e5e7eb;
+  transition: background 0.3s ease;
+}
+.home-progress-segment.done {
+  background: var(--orange);
+}
+.home-progress-segment.active {
+  background: var(--orange);
+  animation: progressFill linear forwards;
+  transform-origin: left;
+}
+@keyframes progressFill {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+/* ------------------------------------------------------------------
+   SECTIONS — BACKGROUND THEMES
+   ------------------------------------------------------------------ */
+
+/* Screen 1 — Hero: warm gradient */
+.home-screen-1 {
+  background: linear-gradient(170deg, #fff7ed 0%, #fff1e6 30%, #ffffff 70%);
+}
+
+/* Screen 2 — Pain: cool gray-blue */
+.home-screen-2 {
+  background: linear-gradient(170deg, #f1f5f9 0%, #e2e8f0 40%, #f8fafc 100%);
+}
+
+/* Screen 3 — Magic: vibrant orange gradient */
+.home-screen-3 {
+  background: linear-gradient(170deg, #fff7ed 0%, #ffedd5 30%, #fff1e6 70%, #ffffff 100%);
+}
+
+/* Screen 4 — Results: fresh green tint */
+.home-screen-4 {
+  background: linear-gradient(170deg, #f0fdf4 0%, #dcfce7 30%, #ffffff 100%);
+}
+
+/* Screen 5 — CTA: rich orange-gold */
+.home-screen-5 {
+  background: linear-gradient(170deg, #ffedd5 0%, #fed7aa 30%, #fff7ed 70%, #ffffff 100%);
+}
+
+/* ------------------------------------------------------------------
+   COMMON TEXT STYLES
+   ------------------------------------------------------------------ */
+.home-screen-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  text-align: center;
+  margin: 0 0 8px 0;
+  line-height: 1.25;
+  z-index: 2;
+}
+.home-screen-title .accent {
+  color: var(--orange);
+}
+.home-screen-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-mid);
+  text-align: center;
+  margin: 0 0 4px 0;
+  max-width: 500px;
+  line-height: 1.55;
+  z-index: 2;
+}
+.home-screen-desc {
+  font-size: 0.95rem;
+  color: var(--text-light);
+  text-align: center;
+  margin: 4px 0 0 0;
+  max-width: 420px;
+  line-height: 1.6;
+  z-index: 2;
+}
+
+/* ------------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------------ */
+.home-login-btn {
+  display: inline-block;
+  background: var(--orange);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 14px 48px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px var(--orange-glow);
+  z-index: 2;
+  margin-top: 24px;
+  border: none;
+  cursor: pointer;
+}
+.home-login-btn:hover {
+  background: var(--orange-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(249, 115, 22, 0.55);
+}
+.home-login-btn.glow {
+  animation: glowPulse 2.2s ease-in-out infinite;
+}
+.home-login-btn.xl {
+  font-size: 1.35rem;
+  padding: 18px 64px;
+}
+
+/* ------------------------------------------------------------------
+   SCREEN 1 — HERO: Jumping Student + Floating "100"
+   ------------------------------------------------------------------ */
+.hero-illustration {
+  width: min(460px, 85vw);
+  height: auto;
+  z-index: 1;
+  margin-bottom: 8px;
+}
+.hero-student {
+  animation: floatStudent 2.8s ease-in-out infinite;
+  transform-origin: center center;
+}
+.hero-score {
+  animation: sparkleScore 1.6s ease-in-out infinite;
+  transform-origin: center center;
+}
+.hero-stars {
+  animation: twinkleStars 2s ease-in-out infinite;
+}
+
+/* Screen 1 logo (small, above title) */
+.home-logo-top {
+  width: 300px;
+  height: 100px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff4e8 0%, #ffe7cc 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  z-index: 2;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 30px rgba(249, 115, 22, 0.18);
+}
+.home-logo-top img {
+  width: 100%;
+  height: auto;
+}
+
+/* ------------------------------------------------------------------
+   SCREEN 2 — PAIN: Bored Student + Clock + Calendar
+   ------------------------------------------------------------------ */
+.pain-illustration {
+  width: min(480px, 85vw);
+  height: auto;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+.clock-pendulum {
+  animation: pendulumSwing 1.4s ease-in-out infinite;
+  transform-origin: 160px 40px;
+}
+.clock-face {
+  animation: clockTick 1s steps(1, end) infinite;
+}
+.pain-student {
+  animation: slumpSigh 3.5s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------
+   SCREEN 3 — MAGIC: Robot Processing Test
+   ------------------------------------------------------------------ */
+.magic-illustration {
+  width: min(500px, 85vw);
+  height: auto;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+.robot-arm {
+  animation: robotArmWave 2s ease-in-out infinite;
+}
+.robot-gear {
+  animation: gearSpin 2.5s linear infinite;
+  transform-origin: center;
+}
+.paper-in {
+  animation: paperSlideIn 2s ease-in-out infinite;
+}
+.paper-out {
+  animation: paperSlideOut 2s ease-in-out infinite;
+}
+.magic-spark {
+  animation: sparkleScore 1.2s ease-in-out infinite;
+}
+.robot-eye {
+  animation: robotBlink 3s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------
+   SCREEN 4 — RESULTS: Computer + Graphs
+   ------------------------------------------------------------------ */
+.results-illustration {
+  width: min(500px, 85vw);
+  height: auto;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+.bar-grow {
+  animation: barGrow 1.8s ease-out forwards;
+  transform-origin: bottom;
+}
+.result-star {
+  animation: sparkleScore 2s ease-in-out infinite;
+}
+.result-student {
+  animation: floatStudent 3.5s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------
+   SCREEN 5 — CTA: Group of Students + Logo
+   ------------------------------------------------------------------ */
+.cta-illustration {
+  width: min(420px, 75vw);
+  height: auto;
+  z-index: 1;
+  margin-bottom: 16px;
+}
+.cta-student {
+  animation: floatStudent 3s ease-in-out infinite;
+}
+.cta-student:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.cta-student:nth-child(3) {
+  animation-delay: 0.8s;
+}
+.cta-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #fff 0%, #fff7ed 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  z-index: 2;
+  margin-bottom: 16px;
+  box-shadow: 0 12px 40px rgba(249, 115, 22, 0.25);
+  animation: glowPulse 2.5s ease-in-out infinite;
+}
+.cta-logo img {
+  width: 100%;
+  height: auto;
+}
+
+/* ------------------------------------------------------------------
+   FOOTER (inside Screen 5)
+   ------------------------------------------------------------------ */
+.home-footer {
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  z-index: 2;
+}
+
+/* ------------------------------------------------------------------
+   KEYFRAMES — ANIMATIONS
+   ------------------------------------------------------------------ */
+
+/* Student floating up-down */
+@keyframes floatStudent {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Score bubble sparkling */
+@keyframes sparkleScore {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.85; }
+}
+
+/* Stars twinkling */
+@keyframes twinkleStars {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Pendulum swing for clock */
+@keyframes pendulumSwing {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+/* Clock hand tick (visual flicker) */
+@keyframes clockTick {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.6; }
+}
+
+/* Student slumping (bored) */
+@keyframes slumpSigh {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(3px) rotate(-2deg); }
+  60% { transform: translateY(0) rotate(0deg); }
+  80% { transform: translateY(2px) rotate(-1deg); }
+}
+
+/* Robot arm wave */
+@keyframes robotArmWave {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-15deg); }
+  60% { transform: rotate(8deg); }
+}
+
+/* Gear spinning */
+@keyframes gearSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Paper sliding into robot */
+@keyframes paperSlideIn {
+  0% { transform: translateX(-80px); opacity: 0; }
+  30% { transform: translateX(0); opacity: 1; }
+  70% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+
+/* Paper sliding out of robot */
+@keyframes paperSlideOut {
+  0% { transform: translateX(0); opacity: 0; }
+  50% { transform: translateX(0); opacity: 0; }
+  70% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(80px); opacity: 0; }
+}
+
+/* Robot blinking */
+@keyframes robotBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+/* Bar chart growing */
+@keyframes barGrow {
+  0% { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+
+/* Glow pulse for CTA button and logo */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 4px 20px var(--orange-glow); }
+  50% { box-shadow: 0 8px 40px rgba(249, 115, 22, 0.65); }
+}
+
+/* Bounce down arrow */
+@keyframes bounceDown {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.5; }
+  50% { transform: translateX(-50%) translateY(10px); opacity: 0.3; }
+}
+
+/* Section entrance animation — triggered when .current is added */
+.home-screen .home-fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+.home-screen.current .home-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered delays for child elements */
+.home-screen .home-fade-in.d1 { transition-delay: 0.1s; }
+.home-screen .home-fade-in.d2 { transition-delay: 0.25s; }
+.home-screen .home-fade-in.d3 { transition-delay: 0.4s; }
+.home-screen .home-fade-in.d4 { transition-delay: 0.55s; }
+
+/* ------------------------------------------------------------------
+   RESPONSIVE — MOBILE & TABLET
+   ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  .home-dots {
+    left: 8px;
+    gap: 10px;
+  }
+  .home-dot {
+    width: 9px;
+    height: 9px;
+  }
+  .home-dot.active {
+    transform: scale(1.3);
+  }
+  .home-screen {
+    padding: 24px 16px;
+  }
+  .home-screen-title {
+    font-size: 1.8rem;
+  }
+  .home-screen-subtitle {
+    font-size: 1rem;
+  }
+  .home-screen-desc {
+    font-size: 0.85rem;
+  }
+  .home-login-btn {
+    font-size: 1rem;
+    padding: 12px 36px;
+  }
+  .home-login-btn.xl {
+    font-size: 1.15rem;
+    padding: 14px 48px;
+  }
+  .hero-illustration,
+  .pain-illustration,
+  .magic-illustration,
+  .results-illustration {
+    width: min(360px, 80vw);
+  }
+  .cta-illustration {
+    width: min(320px, 70vw);
+  }
+  .cta-logo {
+    width: 70px;
+    height: 70px;
+    padding: 8px;
+    border-radius: 18px;
+  }
+  .home-logo-top {
+    width: 60px;
+    height: 60px;
+    padding: 8px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .home-screen-title {
+    font-size: 1.5rem;
+  }
+  .home-screen-subtitle {
+    font-size: 0.9rem;
+  }
+  .home-login-btn {
+    font-size: 0.9rem;
+    padding: 10px 28px;
+  }
+  .home-login-btn.xl {
+    font-size: 1rem;
+    padding: 12px 36px;
+  }
+}

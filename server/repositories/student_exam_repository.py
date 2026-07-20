@@ -103,3 +103,18 @@ class StudentExamRepository:
         )
         return [row.score for row in rows if row.score is not None]
 
+    def get_closed_exams_with_grades_for_student(self, student_id: int):
+        """Return all closed (Submitted/Checked) StudentExams for a student,
+        eagerly loaded with exam, subject, and answers data.
+
+        Returns list of StudentExam with .exam, .exam.subject, and .answers pre-loaded."""
+        return (
+            self.session.query(StudentExam)
+            .filter(
+                StudentExam.student_id == student_id,
+                StudentExam.status.in_(["Submitted", "Checked"]),
+            )
+            .order_by(StudentExam.start_time.desc())
+            .all()
+        )
+

@@ -16,10 +16,6 @@ from config import Config
 from server import config
 from server.controllers.students_auth_controller import auth_bp
 from server.controllers.teacher_auth_controller import auth_teacher_bp
-#from server.controllers.exam_classes_controller import exam_classes_blueprint
-#from server.controllers.teacher_classes_controller import teacher_classes_blueprint
-#from db_connection import init_db
-#from controllers.grading_controller import create_grading_blueprint
 import os
 from sentence_transformers import SentenceTransformer
 from db_connection import health_check
@@ -34,21 +30,6 @@ else:
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=[Config.CLIENT_PATH])
 app.config["SECRET_KEY"] = Config.SECRET_KEY
-#init_db(app)
-
-# 1. טוען מודל
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# MODEL_PATH = os.path.join(BASE_DIR, 'my_model')
-# model = SentenceTransformer(MODEL_PATH)
-#
-# # 2. יוצר service עם המודל
-# grading_service = GradingService(model=model)
-
-# 3. רושם blueprint עם הזרקת service
-#app.register_blueprint(
-  #  create_grading_blueprint(grading_service),
- #   url_prefix='/api/grading'
-#)
 
 start_exam_jobs()
 
@@ -70,10 +51,4 @@ app.register_blueprint(auth_teacher_bp, url_prefix="/api/auth_teacher")
 if __name__ == '__main__':
     app.run(host="localhost", port=5000)
 
-#########################
-# server/app.py
 
-
-# רישום ה-Blueprint עם URL prefix
-
-# רישום מנגנוני טיפול בשגיאות (אם קיימים)

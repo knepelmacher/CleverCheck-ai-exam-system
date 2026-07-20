@@ -1,4 +1,4 @@
-import type { ExamCardModel, ExamInitialPayload, ExamStatus, ResultsPayload, ScoresDistribution } from '../types';
+import type { ExamCardModel, ExamInitialPayload, ExamStatus, GradeRecord, ResultsPayload, ScoresDistribution } from '../types';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -82,5 +82,10 @@ export const examService = {
     const response = await fetch(`${API_BASE}/student_exams/exam/${examId}/scores-distribution`, { credentials: 'include' });
     const payload = await parseJson(response);
     return payload as ScoresDistribution;
+  },
+  getMyData: async (): Promise<GradeRecord[]> => {
+    const response = await fetch(`${API_BASE}/student_exams/student/data`, { credentials: 'include' });
+    const payload = await parseJson(response);
+    return payload as GradeRecord[];
   },
 };

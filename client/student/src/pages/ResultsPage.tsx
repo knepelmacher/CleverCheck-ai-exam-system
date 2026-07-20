@@ -134,7 +134,7 @@ export const ResultsPage = () => {
           <br />
           אנא ודא שניגשת למבחן ושהוא הוגש לבדיקה.
         </p>
-        <Link to="/dashboard" className="primary-button">חזרה לדף הבית</Link>
+        <Link to="/tests" className="primary-button">חזרה לדף הבית</Link>
       </div>
     );
   }
@@ -154,7 +154,7 @@ export const ResultsPage = () => {
     <>
       <div className="page-shell" dir="rtl">
         <div className="results-header">
-          <Link className="back-button" to="/dashboard">← חזרה</Link>
+          <Link className="back-button" to="/tests">← חזרה</Link>
           <div>
             <p className="eyebrow">תוצאות מבחן</p>
             <h1>{results?.examName ?? '-'}</h1>
