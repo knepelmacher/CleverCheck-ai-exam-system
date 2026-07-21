@@ -21,19 +21,31 @@ import {
   TrendingUp,
   BarChart,
   Assessment,
-  AutoAwesome,
   ArrowBack,
 } from '@mui/icons-material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getExams, getExamStats } from '../api/exam.api'
 import type { Exam } from '../models/Exam'
 import type { ExamStats } from '../api/exam.api'
-import { getExamStatusInfo } from '../utils/examStatus'
+import { getExamStatusInfo, isExamActive, isExamClosed } from '../utils/examStatus'
+
+function computeCounts(exams: Exam[], serverStats: ExamStats): ExamStats {
+  const activeCount = exams.filter(e => isExamActive(e.status)).length
+  const closedCount = exams.filter(e => isExamClosed(e.status)).length
+  const draftCount = exams.filter(e => !isExamActive(e.status) && !isExamClosed(e.status)).length
+  return {
+    totalExams: exams.length,
+    activeCount,
+    draftCount,
+    closedCount,
+    averageScore: serverStats.averageScore,
+  }
+}
 
 export default function DashboardPage() {
   const [exams, setExams] = useState<Exam[]>([])
-  const [stats, setStats] = useState<ExamStats>({
+  const [serverStats, setServerStats] = useState<ExamStats>({
     totalExams: 0,
     activeCount: 0,
     draftCount: 0,
@@ -41,9 +53,11 @@ export default function DashboardPage() {
     averageScore: 0,
   })
 
+  const stats = useMemo(() => computeCounts(exams, serverStats), [exams, serverStats])
+
   useEffect(() => {
     void getExams().then(setExams)
-    setTimeout(() => { void getExamStats().then(setStats) }, 500)
+    setTimeout(() => { void getExamStats().then(setServerStats) }, 500)
   }, [])
 
   return (
@@ -151,10 +165,10 @@ export default function DashboardPage() {
                     תשובות שנותחו
                   </Typography>
                   <Typography variant="h3" fontWeight={800} fontSize="2rem" lineHeight={1.2}>
-                    3,300
+                    {(exams.reduce((sum, e) => sum + (e.questionCount ?? 0), 0)).toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" fontSize="0.75rem">
-                    מתוך {exams.reduce((sum, e) => sum + (e.questionCount ?? 0), 0)} תשובות שהתקבלו
+                    שאלות ב־{exams.length} מבחנים במערכת
                   </Typography>
                 </Box>
                 <Box sx={{ flex: 1, maxWidth: 140 }}>
@@ -178,32 +192,34 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        {/* AI Accuracy gauge */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ border: '2px solid rgba(255, 122, 0, 0.18)', boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(255,122,0,0.08)' }}>
-            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-              <Stack direction="row" alignItems="center" spacing={2.5}>
-                <Box
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 3,
-                    bgcolor: 'rgba(34, 197, 94, 0.10)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <TrendingUp sx={{ color: '#22c55e', fontSize: 28 }} />
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" color="text.secondary" fontWeight={600} fontSize="0.8rem">
-                    מדדי דיוק AI
-                  </Typography>
-                  <Typography variant="h3" fontWeight={800} fontSize="2rem" color="#22c55e" lineHeight={1.2}>
-                    98.2%
-                  </Typography>
+        {/* Accuracy gauge */}
+        <Grid item xs={12} sm={6} md={5}>
+          <Card sx={{ border: '2px solid rgba(255, 122, 0, 0.18)', boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(255,122,0,0.08)', height: '100%' }}>
+            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 }, height: '100%' }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ height: '100%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 3,
+                      bgcolor: 'rgba(34, 197, 94, 0.10)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <TrendingUp sx={{ color: '#22c55e', fontSize: 26 }} />
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="body2" color="text.secondary" fontWeight={600} fontSize="0.8rem" noWrap>
+                      מדדי דיוק
+                    </Typography>
+                    <Typography variant="h3" fontWeight={800} fontSize="2rem" color="#22c55e" lineHeight={1.2}>
+                      98.2%
+                    </Typography>
+                  </Box>
                 </Box>
                 <Box sx={{ position: 'relative', width: 80, height: 80, flexShrink: 0 }}>
                   <Box
@@ -219,10 +235,10 @@ export default function DashboardPage() {
                   >
                     <Box
                       sx={{
-                        width: 56,
-                        height: 56,
+                        width: 54,
+                        height: 54,
                         borderRadius: '50%',
-                        bgcolor: 'white',
+                        bgcolor: 'background.paper',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -249,7 +265,7 @@ export default function DashboardPage() {
         </Grid>
 
         {/* Student performance — wide landscape bar chart */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} sm={6} md={7}>
           <Card sx={{ border: '2px solid rgba(255, 122, 0, 0.18)', boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(255,122,0,0.08)' }}>
             <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
               <Stack direction="row" alignItems="center" spacing={1} mb={2.5}>
@@ -412,14 +428,14 @@ export default function DashboardPage() {
           <Card sx={{ height: '100%', border: '2px solid rgba(255, 122, 0, 0.18)', boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(255,122,0,0.08)' }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                <AutoAwesome sx={{ color: 'primary.main', fontSize: 22 }} />
+                <Assessment sx={{ color: 'primary.main', fontSize: 22 }} />
                 <Typography variant="h6" fontWeight={700} fontSize="1.05rem">
                   ניתוח תשובות פתוחות
                 </Typography>
               </Stack>
 
               <Typography variant="body2" color="text.secondary" mb={2.5}>
-                הבינה המלאכותית מנתחת תשובות פתוחות ומעניקה ציון מדויק על בסיס השוואה סמנטית לתשובת המורה.
+                כלים טכנולוגיים מתקדמים מנתחים תשובות פתוחות ומעניקים ציון מדויק על בסיס השוואה סמנטית לתשובת המורה.
               </Typography>
 
               <Stack spacing={1.5}>
@@ -442,7 +458,7 @@ export default function DashboardPage() {
                     <Box>
                       <Typography fontWeight={600} fontSize="0.85rem">{item.label}</Typography>
                       <Typography variant="body2" color="text.secondary" fontSize="0.75rem">
-                        ציון AI משוקלל
+                        ציון משוקלל
                       </Typography>
                     </Box>
                     <Typography fontWeight={800} fontSize="1.2rem" color={item.color}>

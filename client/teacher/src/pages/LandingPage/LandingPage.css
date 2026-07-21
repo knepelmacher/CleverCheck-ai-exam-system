@@ -1,0 +1,673 @@
+/* ================================================================
+   GRADEX Landing Page — Cinematic Comic Auto-Play Styles
+   ================================================================ */
+
+/* --- CSS Variables / Design Tokens --- */
+:root {
+  --color-dark-bg: #0f0f23;
+  --color-dark-secondary: #1a1a2e;
+  --color-pain-red: #e53e3e;
+  --color-pain-orange: #ed8936;
+  --color-solution-blue: #2563eb;
+  --color-solution-green: #10b981;
+  --color-solution-teal: #0d9488;
+  --color-comic-black: #111;
+  --color-comic-white: #fafafa;
+  --color-comic-yellow: #fbbf24;
+  --color-gold: #f59e0b;
+  --color-paper: #fef3c7;
+  --color-moonlight: #cbd5e1;
+  --color-night-sky: #0f172a;
+  --comic-border: 4px solid var(--color-comic-black);
+  --comic-shadow: 6px 6px 0 var(--color-comic-black);
+  --comic-shadow-sm: 3px 3px 0 var(--color-comic-black);
+  --font-comic: 'Fredoka', 'Heebo', sans-serif;
+  --font-body: 'Heebo', sans-serif;
+}
+
+/* --- Reset for Landing Page --- */
+.landing-page *,
+.landing-page *::before,
+.landing-page *::after {
+  box-sizing: border-box;
+}
+
+.landing-page {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  direction: rtl;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  background: var(--color-dark-bg);
+  /* Override #root styles when landing page is shown */
+  text-align: start;
+  border-inline: none;
+  max-width: 100vw;
+}
+
+/* Override #root constraints for landing page */
+#root:has(.landing-page) {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-inline: none;
+  text-align: start;
+}
+
+/* --- Halftone Pattern Background --- */
+.halftone-bg {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+/* --- Comic Panel Borders --- */
+.comic-panel {
+  border: var(--comic-border);
+  box-shadow: var(--comic-shadow);
+  background: #fff;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.comic-panel-dark {
+  border: var(--comic-border);
+  box-shadow: var(--comic-shadow);
+  background: var(--color-dark-secondary);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Speech Bubble --- */
+.comic-speech {
+  position: relative;
+  background: #fff;
+  border: 3px solid var(--color-comic-black);
+  border-radius: 20px;
+  padding: 12px 18px;
+  font-family: var(--font-comic);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.comic-speech::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 15px solid var(--color-comic-black);
+}
+
+.comic-speech.right-tail::after {
+  right: 24px;
+}
+
+.comic-speech.left-tail::after {
+  left: 24px;
+}
+
+/* --- Thought Bubble --- */
+.comic-thought {
+  position: relative;
+  background: #fff;
+  border: 3px solid var(--color-comic-black);
+  border-radius: 30px;
+  padding: 12px 18px;
+  font-family: var(--font-comic);
+  display: inline-block;
+}
+
+.comic-thought::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 20px;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 3px solid var(--color-comic-black);
+  border-radius: 50%;
+}
+
+.comic-thought::after {
+  content: '';
+  position: absolute;
+  bottom: -22px;
+  right: 14px;
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border: 2px solid var(--color-comic-black);
+  border-radius: 50%;
+}
+
+/* --- Shout Bubble --- */
+.comic-shout {
+  position: relative;
+  background: var(--color-comic-yellow);
+  border: 4px solid var(--color-comic-black);
+  padding: 14px 22px;
+  font-family: var(--font-comic);
+  font-weight: 700;
+  font-size: 1.5rem;
+  display: inline-block;
+  text-transform: uppercase;
+  clip-path: polygon(
+    5% 0%, 15% 5%, 25% 0%, 35% 5%, 45% 0%, 55% 5%, 65% 0%, 75% 5%,
+    85% 0%, 95% 5%, 100% 10%, 100% 90%, 95% 100%, 5% 100%, 0% 90%, 0% 10%
+  );
+}
+
+/* --- Speed Lines --- */
+.speed-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.speed-lines::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 20px,
+    rgba(255,255,255,0.08) 20px,
+    rgba(255,255,255,0.08) 24px
+  );
+  animation: speed-lines-move 0.5s linear infinite;
+}
+
+/* --- Comic Burst (for POW / BOOM effects) --- */
+.comic-burst {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, var(--color-comic-yellow) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: burst-pop 0.8s ease-out forwards;
+  pointer-events: none;
+}
+
+/* --- Scene Container --- */
+.scene-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  padding: clamp(16px, 4vw, 40px);
+}
+
+.scene-content {
+  width: min(92vw, 860px);
+  max-height: 80vh;
+  max-height: 80dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 28px);
+  position: relative;
+  z-index: 2;
+}
+
+/* --- Comic Headline --- */
+.comic-headline {
+  font-family: var(--font-comic);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 6vw, 4.5rem);
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+}
+
+.comic-headline.dark-text {
+  color: var(--color-comic-black);
+}
+
+.comic-headline.light-text {
+  color: #fff;
+}
+
+/* --- Comic Subtitle --- */
+.comic-subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  text-align: center;
+  opacity: 0.85;
+  max-width: 600px;
+}
+
+/* --- CTA Button --- */
+.cta-button {
+  font-family: var(--font-comic);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  padding: 14px 40px;
+  background: var(--color-solution-green);
+  color: #fff;
+  border: 4px solid var(--color-comic-black);
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: var(--comic-shadow);
+  transition: transform 0.15s ease;
+  text-decoration: none;
+  display: inline-block;
+  animation: cta-glow 2s ease-in-out infinite;
+}
+
+.cta-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--color-comic-black);
+}
+
+.cta-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--color-comic-black);
+}
+
+/* --- Progress Bar --- */
+.progress-bar-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  z-index: 100;
+  display: flex;
+}
+
+.progress-bar-segment {
+  height: 100%;
+  flex: 1;
+  border-right: 1px solid rgba(255,255,255,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-solution-green);
+  width: 0%;
+  transition: none;
+  border-radius: 0 3px 3px 0;
+}
+
+.progress-bar-segment.completed .progress-bar-fill {
+  background: var(--color-solution-teal);
+}
+
+.progress-bar-segment.active .progress-bar-fill {
+  background: var(--color-gold);
+}
+
+/* --- Nav Arrows --- */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-arrow:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.nav-arrow.prev {
+  right: clamp(8px, 3vw, 24px);
+}
+
+.nav-arrow.next {
+  left: clamp(8px, 3vw, 24px);
+}
+
+/* --- Persistent Header --- */
+.landing-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(8px, 2vw, 16px) clamp(12px, 3vw, 28px);
+  pointer-events: none;
+}
+
+.landing-header > * {
+  pointer-events: auto;
+}
+
+.landing-header-logo {
+  width: clamp(110px, 18vw, 170px);
+  height: auto;
+  filter: drop-shadow(2px 2px 6px rgba(0,0,0,0.4));
+  image-rendering: auto;
+}
+
+.landing-header-login-btn {
+  font-family: var(--font-comic);
+  font-weight: 600;
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  padding: 8px 24px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-radius: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.landing-header-login-btn:hover {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.6);
+}
+
+/* --- Pause Indicator --- */
+.pause-indicator {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-family: var(--font-comic);
+  font-size: 0.85rem;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+/* --- Flash Overlay (for transitions) --- */
+.flash-overlay {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  z-index: 200;
+  pointer-events: none;
+}
+
+/* --- Star Burst Background Effect --- */
+.star-burst {
+  position: absolute;
+  inset: -50%;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255,255,255,0.03) 2deg,
+      transparent 4deg,
+      transparent 8deg,
+      rgba(255,255,255,0.03) 10deg,
+      transparent 12deg
+    );
+  animation: star-burst-spin 20s linear infinite;
+  pointer-events: none;
+}
+
+/* ================================================================
+   KEYFRAME ANIMATIONS
+   ================================================================ */
+
+/* Clock spin */
+@keyframes clock-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Speed lines move */
+@keyframes speed-lines-move {
+  from { transform: translateX(0); }
+  to { transform: translateX(40px); }
+}
+
+/* Burst pop */
+@keyframes burst-pop {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.8); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* CTA glow pulse */
+@keyframes cta-glow {
+  0%, 100% { box-shadow: 6px 6px 0 var(--color-comic-black), 0 0 20px rgba(16,185,129,0.4); }
+  50% { box-shadow: 6px 6px 0 var(--color-comic-black), 0 0 40px rgba(16,185,129,0.7), 0 0 60px rgba(16,185,129,0.3); }
+}
+
+/* Star burst spin */
+@keyframes star-burst-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Float up/down (ZZZ, bubbles) */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Gentle bob */
+@keyframes gentle-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(1deg); }
+  75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+/* Paper stack grow */
+@keyframes paper-stack {
+  0% { transform: translateY(20px) rotate(-3deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+
+/* Red X stamp */
+@keyframes x-stamp {
+  0% { transform: scale(3) rotate(-30deg); opacity: 0; }
+  60% { transform: scale(0.9) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Bar rise */
+@keyframes bar-rise {
+  from { height: 0%; }
+  to { height: var(--target-height); }
+}
+
+/* Bell curve draw */
+@keyframes bell-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Window light up */
+@keyframes window-light {
+  0%, 100% { background: #1e293b; box-shadow: none; }
+  50% { background: #fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.6); }
+}
+
+/* Pulse */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Slide in from right (RTL) */
+@keyframes slide-in-right {
+  from { transform: translateX(60px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Slide in from left (RTL) */
+@keyframes slide-in-left {
+  from { transform: translateX(-60px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Fade in */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scale bounce in */
+@keyframes scale-bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* Shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+
+/* Drip / sweat drop */
+@keyframes sweat-drop {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(30px); opacity: 0; }
+}
+
+/* Sparkle */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+/* Checkmark draw */
+@keyframes checkmark-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Typing cursor */
+@keyframes blink-cursor {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: var(--color-comic-black); }
+}
+
+/* ================================================================
+   RESPONSIVE ADJUSTMENTS
+   ================================================================ */
+
+@media (max-width: 768px) {
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .comic-panel,
+  .comic-panel-dark {
+    border-width: 3px;
+    box-shadow: 4px 4px 0 var(--color-comic-black);
+    border-radius: 8px;
+  }
+
+  .comic-headline {
+    font-size: clamp(1.4rem, 7vw, 2.5rem);
+  }
+
+  .progress-bar-container {
+    height: 4px;
+  }
+
+  .scene-content {
+    width: 95vw;
+    gap: 10px;
+    max-height: 75dvh;
+  }
+}
+
+@media (max-width: 480px) {
+  .comic-headline {
+    font-size: clamp(1.2rem, 8vw, 2rem);
+  }
+
+  .comic-subtitle {
+    font-size: clamp(0.85rem, 4vw, 1.1rem);
+  }
+
+  .cta-button {
+    font-size: 1rem;
+    padding: 12px 28px;
+  }
+
+  .nav-arrow {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ================================================================
+   SCENE-SPECIFIC STYLES
+   ================================================================ */
+
+/* Hero Scene — Dark room */
+.scene-hero {
+  background: linear-gradient(180deg, #0a0a1a 0%, #0f0f23 40%, #1a1a2e 100%);
+}
+
+/* Pain Scene — Stress gradient */
+.scene-pain {
+  background: linear-gradient(180deg, #1a1a2e 0%, #2d1a1a 50%, #3d1a1a 100%);
+}
+
+/* Solution Scene — Bright burst */
+.scene-solution {
+  background: linear-gradient(180deg, #fafafa 0%, #f0f9ff 50%, #ecfdf5 100%);
+}
+
+/* Flow Scene — Clean energetic */
+.scene-flow {
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
+}
+
+/* Stats Scene — Professional */
+.scene-stats {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+/* Admin Scene — Organized */
+.scene-admin {
+  background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 50%, #d1fae5 100%);
+}
+
+/* Final Scene — Warm peaceful */
+.scene-final {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #334155 100%);
+}
