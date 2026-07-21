@@ -1,0 +1,728 @@
+from sqlalchemy import Column, Integer, String
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+class Class(Base):
+    """כיתה במערכת."""
+
+    __tablename__ = "Classes"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("ClassID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FIELDS
+    # =========================
+    class_name = Column("ClassName", String(50), nullable=False, unique=True)
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    students = relationship(
+        "Student",
+        back_populates="class_"
+    )
+
+    exam_classes = relationship(
+        "ExamClass",
+        back_populates="class_",
+        cascade="all, delete-orphan"
+    )
+
+    teacher_classes = relationship(
+        "TeacherClass",
+        back_populates="class_",
+        cascade="all, delete-orphan"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return f"<Class id={self.id} name={self.class_name}>"
+
+
+from sqlalchemy import Column, Integer, ForeignKey
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+class ExamClass(Base):
+    __tablename__ = "ExamClasses"
+
+    class_id = Column(
+        "ClassID",
+        Integer,
+        ForeignKey("Classes.ClassID"),
+        primary_key=True
+    )
+
+    exam_id = Column(
+        "ExamID",
+        Integer,
+        ForeignKey("Exams.ExamID"),
+        primary_key=True
+    )
+
+    class_ = relationship(
+        "Class",
+        back_populates="exam_classes"
+    )
+
+    exam = relationship(
+        "Exam",
+        back_populates="exam_classes"
+    )
+
+from datetime import datetime
+
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+
+class Exam(Base):
+    """מבחן שנוצר על ידי מורה."""
+
+    __tablename__ = "Exams"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("ExamID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FIELDS
+    # =========================
+    exam_name = Column("ExamName", String(100), nullable=False)
+
+    teacher_id = Column(
+        "TeacherID",
+        Integer,
+        ForeignKey("Teachers.TeacherID"),
+        nullable=False,
+        index=True
+    )
+
+    subject_id = Column(
+        "SubjectID",
+        Integer,
+        ForeignKey("Subjects.SubjectID"),
+        nullable=False,
+        index=True
+    )
+
+    start_time = Column("StartTime", DateTime, nullable=False)
+    end_time = Column("EndTime", DateTime, nullable=False)
+
+    duration_minutes = Column("DurationMinutes", Integer, nullable=False)
+
+    created_at = Column("CreatedAt", DateTime, default=datetime.utcnow)
+
+    status = Column(
+        "Status",
+        String(20),
+        nullable=False,
+        default="Draft"
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    teacher = relationship("Teacher", back_populates="exams")
+    subject = relationship("Subject", back_populates="exams")
+
+    questions = relationship(
+        "Question",
+        back_populates="exam",
+        cascade="all, delete-orphan"
+    )
+
+    student_exams = relationship(
+        "StudentExam",
+        back_populates="exam",
+        cascade="all, delete-orphan"
+    )
+
+    exam_classes = relationship(
+        "ExamClass",
+        back_populates="exam",
+        cascade="all, delete-orphan"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<Exam id={self.id} "
+            f"name={self.exam_name} "
+            f"status={self.status}>"
+        )
+
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Text
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+class Option(Base):
+    """אפשרות תשובה לשאלה סגורה (Multiple Choice)."""
+
+    __tablename__ = "Options"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("OptionID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FIELDS
+    # =========================
+    option_number = Column("OptionNumber", Integer, nullable=False)
+
+    question_id = Column(
+        "QuestionID",
+        Integer,
+        ForeignKey("Questions.QuestionID", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    option_text = Column("OptionText", Text, nullable=False)
+
+    # =========================
+    # CONSTRAINTS
+    # =========================
+    __table_args__ = (
+        UniqueConstraint(
+            "QuestionID",
+            "OptionNumber",
+            name="UQ_Question_OptionNumber"
+        ),
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    question = relationship("Question", back_populates="options")
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<Option id={self.id} "
+            f"question_id={self.question_id} "
+            f"number={self.option_number}>"
+        )
+
+from sqlalchemy import Column, Integer, String
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+
+class QuestionType(Base):
+    """סוג שאלה (למשל: פתוחה / אמריקאית)."""
+
+    __tablename__ = "QuestionTypes"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("QuestionTypeID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FIELDS
+    # =========================
+    type_name = Column("TypeName", String(50), nullable=False, unique=True)
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    questions = relationship(
+        "Question",
+        back_populates="question_type"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return f"<QuestionType id={self.id} name={self.type_name}>"
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, UniqueConstraint, Float
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+
+
+class Question(Base):
+    """שאלה בתוך מבחן."""
+
+    __tablename__ = "Questions"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("QuestionID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FIELDS
+    # =========================
+    question_number = Column("QuestionNumber", Integer, nullable=False)
+
+    exam_id = Column(
+        "ExamID",
+        Integer,
+        ForeignKey("Exams.ExamID", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    question_text = Column("QuestionText", Text, nullable=False)
+
+    question_type_id = Column(
+        "QuestionTypeID",
+        Integer,
+        ForeignKey("QuestionTypes.QuestionTypeID"),
+        nullable=False,
+        index=True
+    )
+
+    max_score = Column("MaxScore", Float, nullable=False)
+
+    # =========================
+    # CONSTRAINTS
+    # =========================
+    __table_args__ = (
+        UniqueConstraint(
+            "ExamID",
+            "QuestionNumber",
+            name="UQ_Exam_QuestionNumber"
+        ),
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    exam = relationship("Exam", back_populates="questions")
+    question_type = relationship("QuestionType")
+
+    options = relationship(
+        "Option",
+        back_populates="question",
+        cascade="all, delete-orphan"
+    )
+
+    teacher_answer = relationship(
+        "TeacherAnswer",
+        back_populates="question",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
+    student_answers = relationship(
+        "StudentAnswer",
+        back_populates="question"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<Question id={self.id} "
+            f"exam_id={self.exam_id} "
+            f"number={self.question_number}>"
+        )
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+
+from server.models.base import Base
+
+class Student(Base):
+    """סטודנט במערכת."""
+
+    __tablename__ = "Students"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("StudentID", Integer, primary_key=True,autoincrement=False)
+
+    # =========================
+    # FIELDS
+    # =========================
+    password_hash = Column("PasswordHash", String(255), nullable=False)
+
+    first_name = Column("FirstName", String(100), nullable=False)
+    last_name = Column("LastName", String(100), nullable=False)
+
+    class_id = Column(
+        "ClassID",
+        Integer,
+        ForeignKey("Classes.ClassID"),
+        nullable=False,
+        index=True
+    )
+
+    is_active = Column("IsActive", Boolean, default=False)
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    class_ = relationship("Class", back_populates="students")
+
+    student_exams = relationship(
+        "StudentExam",
+        back_populates="student",
+        cascade="all, delete-orphan"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<Student id={self.id} "
+            f"name={self.first_name} {self.last_name}>"
+        )
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, CheckConstraint
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+
+
+
+class StudentAnswer(Base):
+    """תשובת תלמיד לשאלה במבחן (פתוחה או אמריקאית)."""
+
+    __tablename__ = "StudentAnswers"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("AnswerID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FK
+    # =========================
+    student_exam_id = Column(
+        "StudentExamID",
+        Integer,
+        ForeignKey("StudentExams.StudentExamID", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    question_id = Column(
+        "QuestionID",
+        Integer,
+        ForeignKey("Questions.QuestionID"),
+        nullable=False,
+        index=True
+    )
+
+    selected_option_id = Column(
+        "SelectedOptionID",
+        Integer,
+        ForeignKey("Options.OptionID"),
+        nullable=True
+    )
+
+    # =========================
+    # ANSWER DATA
+    # =========================
+    answer_text = Column("AnswerText", Text, nullable=True)
+
+    score = Column(
+        "Score",
+        Float,
+        nullable=True
+    )
+
+    # =========================
+    # CONSTRAINT (only one type of answer)
+    # =========================
+    __table_args__ = (
+        CheckConstraint(
+            """
+            (AnswerText IS NOT NULL AND SelectedOptionID IS NULL)
+            OR
+            (AnswerText IS NULL AND SelectedOptionID IS NOT NULL)
+            """,
+            name="CK_StudentAnswers_AnswerType"
+        ),
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    student_exam = relationship("StudentExam", back_populates="answers")
+    question = relationship("Question")
+    option = relationship("Option")
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<StudentAnswer id={self.id} "
+            f"question_id={self.question_id} "
+            f"score={self.score}>"
+        )
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, CheckConstraint, DateTime, UniqueConstraint
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+
+
+class StudentExam(Base):
+    """רישום תלמיד למבחן + תוצאות כלליות."""
+
+    __tablename__ = "StudentExams"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("StudentExamID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FK
+    # =========================
+    exam_id = Column(
+        "ExamID",
+        Integer,
+        ForeignKey("Exams.ExamID", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    student_id = Column(
+        "StudentID",
+        Integer,
+        ForeignKey("Students.StudentID", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    # =========================
+    # TIME FIELDS
+    # =========================
+    start_time = Column("StartTime", DateTime, nullable=True)
+    end_time = Column("EndTime", DateTime, nullable=True)
+
+    # =========================
+    # FINAL SCORE (exam level)
+    # =========================
+    score = Column("Score", Float, nullable=True)
+
+    # =========================
+    # CONSTRAINTS
+    # =========================
+    __table_args__ = (
+        UniqueConstraint("ExamID", "StudentID", name="UQ_StudentExam"),
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    exam = relationship("Exam", back_populates="student_exams")
+    student = relationship("Student", back_populates="student_exams")
+
+    answers = relationship(
+        "StudentAnswer",
+        back_populates="student_exam",
+        cascade="all, delete-orphan"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<StudentExam id={self.id} "
+            f"exam_id={self.exam_id} "
+            f"student_id={self.student_id} "
+            f"score={self.score}>"
+        )
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+
+from server.models.base import Base
+
+class Subject(Base):
+    __tablename__ = 'Subjects'
+    subject_id = Column("SubjectID", Integer, primary_key=True)
+    subject_name = Column("SubjectName", String(50), unique=True, nullable=False)
+    exams = relationship("Exam", back_populates="subject")
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, CheckConstraint
+from server.models.base import Base
+from sqlalchemy.orm import relationship
+
+
+
+class TeacherAnswer(Base):
+    """תשובת מורה לשאלה (פתוחה או אמריקאית נכונה)."""
+
+    __tablename__ = "TeacherAnswers"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("TeacherAnswerID", Integer, primary_key=True, autoincrement=True)
+
+    # =========================
+    # FK
+    # =========================
+    question_id = Column(
+        "QuestionID",
+        Integer,
+        ForeignKey("Questions.QuestionID", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    correct_option_id = Column(
+        "CorrectOptionID",
+        Integer,
+        ForeignKey("Options.OptionID"),
+        nullable=True
+    )
+
+    # =========================
+    # ANSWER DATA
+    # =========================
+    answer_text = Column("AnswerText", Text, nullable=True)
+
+    # =========================
+    # CONSTRAINT (only one type)
+    # =========================
+    __table_args__ = (
+        CheckConstraint(
+            """
+            (AnswerText IS NOT NULL AND CorrectOptionID IS NULL)
+            OR
+            (AnswerText IS NULL AND CorrectOptionID IS NOT NULL)
+            """,
+            name="CK_TeacherAnswers_Type"
+        ),
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    question = relationship("Question", back_populates="teacher_answer")
+    correct_option = relationship("Option")
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<TeacherAnswer id={self.id} "
+            f"question_id={self.question_id}>"
+        )
+
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+
+from server.models.base import Base
+
+
+class TeacherClass(Base):
+    __tablename__ = "TeacherClasses"
+
+    teacher_id = Column(
+        "TeacherID",
+        Integer,
+        ForeignKey("Teachers.TeacherID"),
+        primary_key=True
+    )
+
+    class_id = Column(
+        "ClassID",
+        Integer,
+        ForeignKey("Classes.ClassID"),
+        primary_key=True
+    )
+
+    teacher = relationship(
+        "Teacher",
+        back_populates="teacher_classes"
+    )
+
+    class_ = relationship(
+        "Class",
+        back_populates="teacher_classes"
+    )
+
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
+from server.models.base import Base
+
+
+
+class Teacher(Base):
+    """מורה במערכת."""
+
+    __tablename__ = "Teachers"
+
+    # =========================
+    # PK
+    # =========================
+    id = Column("TeacherID", Integer, primary_key=True,autoincrement=False)
+
+    # =========================
+    # FIELDS
+    # =========================
+    password_hash = Column("PasswordHash", String(255), nullable=False)
+
+    first_name = Column("FirstName", String(50), nullable=False)
+    last_name = Column("LastName", String(50), nullable=False)
+
+    email = Column("Email", String(100), nullable=False, unique=True)
+
+    is_active = Column("IsActive", Boolean, default=False)
+
+    role = Column("Role", String(10), default="teacher")
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    exams = relationship(
+        "Exam",
+        back_populates="teacher"
+    )
+
+    # אם משתמשים ב־TeacherClasses
+    teacher_classes = relationship(
+        "TeacherClass",
+        back_populates="teacher",
+        cascade="all, delete-orphan"
+    )
+
+    # =========================
+    # DEBUG
+    # =========================
+    def __repr__(self):
+        return (
+            f"<Teacher id={self.id} "
+            f"name={self.first_name} {self.last_name}>"
+        )
+

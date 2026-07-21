@@ -10,7 +10,12 @@ def get_student_score(question_text, student_text, teacher_text, max_score,):
 
     score_model = check_with_model(question_text, teacher_text, cleaned_student_text)*max_score
 
+    score_model = round(score_model * 2) / 2
+
     score_stanza = check_with_stanza(cleaned_student_text, teacher_text, max_score)
+
+    score_stanza = round(score_stanza * 2) / 2
+
 
     print("score_model")
     print(score_model)

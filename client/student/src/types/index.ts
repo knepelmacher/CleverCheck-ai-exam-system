@@ -101,3 +101,14 @@ export interface ScoresDistribution {
   totalStudents: number;
   average: number;
 }
+
+export interface GradeRecord {
+  examId: number;
+  name: string;
+  subject: string;
+  score: number;
+  maxScore: number;
+  classAvg: number;
+  date: string;
+  status: string;
+}

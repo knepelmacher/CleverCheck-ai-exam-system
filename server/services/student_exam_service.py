@@ -245,4 +245,42 @@ class StudentExamService:
             "average": avg,
         }
 
+    def get_student_data_for_my_data_page(self, student_id: int):
+        """Return all closed exams with grades, class averages, and score distributions
+        for a student — single query for the MyDataPage.
+
+        Returns:
+            list of dicts, each with:
+                examId, name, subject, score, maxScore, classAvg, date, status
+        """
+        student_exams = self.repo.get_closed_exams_with_grades_for_student(student_id)
+
+        result = []
+        for se in student_exams:
+            exam = se.exam
+            if not exam:
+                continue
+
+            # Calculate max score from exam questions
+            questions = exam.questions or []
+            max_score = sum(getattr(q, "max_score", 0) or 0 for q in questions)
+
+            # Calculate class average from the scores distribution logic
+            scores = self.repo.get_scores_by_exam(exam.id)
+            total = len(scores)
+            class_avg = round(sum(scores) / total, 1) if total > 0 else 0
+
+            result.append({
+                "examId": exam.id,
+                "name": exam.exam_name,
+                "subject": exam.subject.subject_name if exam.subject else "",
+                "score": se.score or 0,
+                "maxScore": max_score or 100,
+                "classAvg": class_avg,
+                "date": exam.start_time.isoformat() if exam.start_time else "",
+                "status": se.status,
+            })
+
+        return result
+
 # services/exam_service.py

@@ -54,3 +54,4 @@ def update_student_answer(answer_id):
 def delete_student_answer(answer_id):
     service.delete_student_answer(answer_id)
     return jsonify({'message': 'StudentAnswer deleted'})
+

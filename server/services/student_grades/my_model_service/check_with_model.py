@@ -23,6 +23,22 @@ def predict_score(text):
 def format_model_text(question, teacher_answer, student_answer):
     return f"[Q] {question} [T] {teacher_answer} [S] {student_answer}"
 
+def normalizeScore(question, teacher_answer, student_answer, score):
+    len_teacher_answer = len(teacher_answer)
+    if score > 1:
+        return 1
+    elif score < 0.1:
+        return 0
+    elif len_teacher_answer <= 2:
+        if score < 0.5:
+            return 0
+        else:
+            return score
+    else:
+        return score
+
+
+
 def check_with_model(question, teacher_answer, student_answer):
     text = format_model_text(
         question,
@@ -32,5 +48,10 @@ def check_with_model(question, teacher_answer, student_answer):
 
     score = predict_score(text)
 
-    return score
+    normalizedScore = normalizeScore(question, teacher_answer, student_answer, score)
+
+    return normalizedScore
+
+
+
 

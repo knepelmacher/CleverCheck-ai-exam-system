@@ -12,7 +12,7 @@ export const LoginPage = () => {
   return (
     <div className="login-page" dir="rtl">
       <div className="login-hero">
-        <p className="eyebrow">Gradex</p>
+        <img src="/logo.png" alt="CleverCheck" className="login-logo" />
         <h1>מערכת מבחנים חכמה</h1>
         <p>עבודה על מבחנים, שמירה אוטומטית וסקירת תוצאות</p>
       </div>

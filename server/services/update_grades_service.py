@@ -29,10 +29,13 @@ class UpdateGradesService:
         # 1. שליפת כל התשובות של התלמיד למבחן
         answers = self.student_answer_repo.get_by_exam(student_exam_id)
 
-        if not answers:
-            return None
-
         total_score = 0
+
+        if not answers:
+            exam = self.student_exam_repo.get_by_id(student_exam_id)
+            if exam:
+                exam.score = 0
+            return exam
 
         # 2. מעבר על כל תשובה
         for answer in answers:

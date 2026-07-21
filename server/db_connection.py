@@ -23,14 +23,7 @@ _DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
 params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};UID=gradex_user;PWD=Gradex123!")
 
 DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={params}"
-# ── Engine ───────────────────────────────────────────────────
-#engine = create_engine(
- #   DATABASE_URL,
-  #  echo=False,              # True → הדפסת SQL לדיבוג
-   # pool_pre_ping=True,      # בדיקת חיות חיבור לפני שימוש
-   # pool_size=5,
-    #max_overflow=10,
-#)
+
 engine = create_engine(
     f'mssql+pyodbc://gradex_user:Gradex123!@{_SERVER}/{_DATABASE}'
     f'?driver={_DRIVER.replace(" ", "+")}'
