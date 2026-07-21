@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 # ── הרכבת Connection String ──────────────────────────────────
 from urllib.parse import quote_plus
 
-#_SERVER = os.getenv('DB_SERVER', r'localhost\SQLEXPRESS')
-#_DATABASE = os.getenv('DB_NAME', 'CleverCheckDB')
-#_DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
-_SERVER = '192.168.43.13'
-_DATABASE = 'Gradex'
+_SERVER = os.getenv('DB_SERVER', r'192.168.43.13')
+_DATABASE = os.getenv('DB_NAME', 'Gradex')
 _DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
+#_SERVER = '192.168.43.13'
+#_DATABASE = 'Gradex'
+#_DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
 
 #params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};Trusted_Connection=yes")
 params = quote_plus(f"DRIVER={_DRIVER};SERVER={_SERVER};DATABASE={_DATABASE};UID=gradex_user;PWD=Gradex123!")
