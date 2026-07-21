@@ -251,4 +251,8 @@ server/my_model/
 
 # קבצי מערכת
 .DS_Store
-Thumbs.dbnode_modules/ 
+Thumbs.dbnode_modules/
+
+node_modules/
+.vite/
+dist/
